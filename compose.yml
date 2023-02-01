@@ -1,0 +1,14 @@
+version: '3'
+services:
+  api:
+    build:
+      context: '.'
+      dockerfile: './.image/api.Dockerfile'
+    volumes:
+      - './src:/go/src'
+  gopher:
+    image: golang:1.19
+    working_dir: /go/src
+    volumes:
+      - ./src:/go/src
+      - ./cover:/go/cover
