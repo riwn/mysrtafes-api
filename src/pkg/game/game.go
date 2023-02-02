@@ -1,7 +1,6 @@
 package game
 
 import (
-	"fmt"
 	"mysrtafes-backend/pkg/game/link"
 	"mysrtafes-backend/pkg/game/platform"
 	"mysrtafes-backend/pkg/game/tag"
@@ -85,8 +84,4 @@ func New(
 		Links:       links,
 		Platforms:   platforms,
 	}
-}
-
-func (g Game) String() string {
-	return fmt.Sprintf("「%s」は企画元 %s, 開発元 %sによって%sにリリースされた%sです", g.Name, g.Publisher, g.Developer, g.ReleaseDate.Time(), g.Description)
 }

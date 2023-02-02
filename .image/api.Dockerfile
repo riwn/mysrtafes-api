@@ -2,7 +2,7 @@ FROM golang:1.20 as Builder
 
 WORKDIR /go/src
 
-COPY ./src/go.mod ./
+COPY ./src/go.mod ./src/go.sum ./
 RUN go mod download
 
 COPY ./src ./

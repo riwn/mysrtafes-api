@@ -1,22 +1,36 @@
 package main
 
 import (
+	"context"
 	"fmt"
-	"mysrtafes-backend/pkg/game"
+	handle "mysrtafes-backend/http-handle"
+	"os"
+	"os/signal"
+	"syscall"
 	"time"
 )
 
 func main() {
-	// TODO: APIの環境構築ロジックを書く
-	g := game.New(
-		1,
-		"風来のシレン",
-		"ローグライクの大人気作品",
-		"チュンソフト",
-		"チュンソフト",
-		game.ReleaseDate(time.Date(1995, 12, 1, 0, 0, 0, 0, time.UTC)),
-		nil,
-		nil,
-	)
-	fmt.Println(g)
+	// TODO: envの設定
+	services := handle.NewServices(":3000")
+
+	// 終了シグナル受け取りContextの定義
+	ctx, _ := signal.NotifyContext(context.Background(), syscall.SIGTERM, os.Interrupt, os.Kill)
+
+	// APIサーバー起動
+	server := services.Server()
+
+	go func() {
+		// 中断処理実行後に動作
+		<-ctx.Done()
+		// タイムアウトのcontextを生成
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		// Graceful ShutDown
+		server.Shutdown(ctx)
+	}()
+
+	fmt.Println("starting api server")
+	server.ListenAndServe()
+	fmt.Println("shutdown api server")
 }
