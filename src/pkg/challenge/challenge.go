@@ -1,6 +1,8 @@
 package challenge
 
 import (
+	"mysrtafes-backend/pkg/challenge/detail"
+	"mysrtafes-backend/pkg/challenge/stream"
 	"net/url"
 	"regexp"
 )
@@ -42,6 +44,7 @@ func (u URL) URL() url.URL {
 type Stream struct {
 	IsStream IsStream
 	URL      URL
+	Status   *stream.Status
 }
 
 // DiscordID
@@ -76,8 +79,8 @@ type Comment string
 // 挑戦
 type Challenge struct {
 	ID         ID
-	Name       Name
 	Challenger Challenger
+	Detail     []*detail.Detail
 	Stream     Stream
 	SNS        SNS
 	Comment    Comment
