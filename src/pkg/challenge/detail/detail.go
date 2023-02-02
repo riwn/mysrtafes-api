@@ -14,9 +14,14 @@ type GoalDetail string
 // 部門
 type Department uint8
 
+func (d Department) Valid() bool {
+	return d < Department_MAX
+}
+
 const (
 	Department_BEGINNER Department = iota
 	Department_EXPERT
+	Department_MAX
 )
 
 type Detail struct {
