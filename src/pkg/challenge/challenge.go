@@ -27,8 +27,9 @@ func (r ReadingName) Valid() bool {
 // パスワード
 type Password string
 
+// TODO: 半角英数記号みなくてよい？
 func (p Password) Valid() bool {
-	return len(p) > 0 && len(p) < 16
+	return len(p) > 3 && len(p) < 17
 }
 
 func (p Password) String() string {
@@ -68,13 +69,21 @@ func (d Discord) Valid() bool {
 	return len(d) > 5 && len(d) < 37 && r.MatchString(string(d))
 }
 
+func (d Discord) Has() bool {
+	return len(d) != 0
+}
+
 // TwitterID
 type Twitter string
 
 // 0≦len≦16 かつ@xxx形式
 func (t Twitter) Valid() bool {
-	r := regexp.MustCompile(`@.+`)
-	return len(t) > 1 && len(t) < 16 && r.MatchString(string(t))
+	r := regexp.MustCompile(`@[0-9a-zA-Z_]{1,15}`)
+	return len(t) > 1 && len(t) < 17 && r.MatchString(string(t))
+}
+
+func (t Twitter) Has() bool {
+	return len(t) != 0
 }
 
 type SNS struct {
@@ -84,11 +93,22 @@ type SNS struct {
 
 // SNSはどちらか必須
 func (s *SNS) Valid() bool {
-	return s.Discord.Valid() || s.Twitter.Valid()
+	// 空文字ではないのにバリデートに引っかかってる時は不正な文字列と判定
+	if s.Discord.Has() && !s.Discord.Valid() {
+		return false
+	}
+	if s.Twitter.Has() && !s.Twitter.Valid() {
+		return false
+	}
+	return s.Discord.Has() || s.Twitter.Has()
 }
 
 // 挑戦コメント
 type Comment string
+
+func (n Comment) Valid() bool {
+	return len(n) > 0 && len(n) < 2049
+}
 
 // 挑戦
 type Challenge struct {

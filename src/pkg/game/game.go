@@ -16,14 +16,34 @@ type ID uint64
 // ゲームタイトル
 type Name string
 
+// 1 ≦ name.length ≦ 256
+func (n Name) Valid() bool {
+	return len(n) > 0 && len(n) < 256
+}
+
 // ゲーム説明
 type Description string
+
+// 1 ≦ Description.length ≦ 2049
+func (d Description) Valid() bool {
+	return len(d) > 0 && len(d) < 2049
+}
 
 // 企画元
 type Publisher string
 
+// 1 ≦ Publisher.length ≦ 256
+func (p Publisher) Valid() bool {
+	return len(p) > 0 && len(p) < 256
+}
+
 // 開発元
 type Developer string
+
+// 1 ≦ Developer.length ≦ 256
+func (d Developer) Valid() bool {
+	return len(d) > 0 && len(d) < 256
+}
 
 // 発売日
 type ReleaseDate time.Time

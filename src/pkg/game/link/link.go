@@ -11,7 +11,6 @@ type ID uint64
 type Title string
 
 // 1 ≦ title.length ≦ 256
-// TODO: 最大値変更する
 func (t Title) Valid() bool {
 	return len(t) > 0 && len(t) < 256
 }
@@ -19,18 +18,12 @@ func (t Title) Valid() bool {
 // サイトURL
 type URL url.URL
 
-// TODO: なにかしらのValidate
-func (u URL) Valid() bool {
-	return true
-}
-
 // サイト先の説明
 type Description string
 
-// 1 ≦ description.length ≦ 256
-// TODO: 最大値変更する
+// 1 ≦ description.length ≦ 2049
 func (d Description) Valid() bool {
-	return len(d) > 0 && len(d) < 256
+	return len(d) > 0 && len(d) < 2049
 }
 
 // リンク
