@@ -110,7 +110,7 @@ func Testパスワードバリデート(t *testing.T) {
 	}
 }
 
-func Tesパスワード出力(t *testing.T) {
+func Testパスワード出力(t *testing.T) {
 	tests := []struct {
 		name string
 		p    Password
