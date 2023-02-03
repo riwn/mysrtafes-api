@@ -22,9 +22,9 @@ func NewServer(repo Repository) Server {
 	return &server{repo}
 }
 
-func (s *server) Create(l *Challenge) (*Challenge, error) {
+func (s *server) Create(c *Challenge) (*Challenge, error) {
 	// TODO: Validate
-	return s.repository.ChallengeCreate(l)
+	return s.repository.ChallengeCreate(c)
 }
 
 func (s *server) Read(id ID) (*Challenge, error) {
@@ -32,9 +32,9 @@ func (s *server) Read(id ID) (*Challenge, error) {
 	return s.repository.ChallengeRead(id)
 }
 
-func (s *server) Update(l *Challenge) (*Challenge, error) {
+func (s *server) Update(c *Challenge) (*Challenge, error) {
 	// TODO: Validate
-	return s.repository.ChallengeUpdate(l)
+	return s.repository.ChallengeUpdate(c)
 }
 
 func (s *server) Delete(id ID) error {

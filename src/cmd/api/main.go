@@ -4,15 +4,48 @@ import (
 	"context"
 	"fmt"
 	handle "mysrtafes-backend/http-handle"
+	"mysrtafes-backend/pkg/challenge"
+	"mysrtafes-backend/repository"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 )
 
+type Env struct {
+	Addr     string
+	DBConfig DBConfig
+}
+
+var env = Env{
+	Addr: os.Getenv("ADDR"),
+	DBConfig: DBConfig{
+		User: os.Getenv("MYS_RTA_FES_DB_USER"),
+		Pass: os.Getenv("MYS_RTA_FES_DB_PASS"),
+		Host: os.Getenv("MYS_RTA_FES_DB_HOST"),
+		Port: os.Getenv("MYS_RTA_FES_DB_PORT"),
+		Name: os.Getenv("MYS_RTA_FES_DB_NAME"),
+	},
+}
+
+func init() {
+	if env.Addr == "" {
+		env.Addr = ":80"
+	}
+}
+
 func main() {
-	// TODO: envの設定
-	services := handle.NewServices(":3000")
+	// DBの生成
+	db, err := newDB(env.DBConfig)
+	if err != nil {
+		panic(err)
+	}
+	dbRepository := repository.New(db)
+	// Serviceの生成
+	services := handle.NewServices(
+		env.Addr,
+		challenge.NewServer(dbRepository),
+	)
 
 	// 終了シグナル受け取りContextの定義
 	ctx, _ := signal.NotifyContext(context.Background(), syscall.SIGTERM, os.Interrupt, os.Kill)

@@ -1,4 +1,4 @@
-FROM golang:1.20 as Builder
+FROM golang:1.20 as builder
 
 WORKDIR /go/src
 
@@ -9,13 +9,14 @@ COPY ./src ./
 
 WORKDIR /go/src/cmd/api
 
+ARG CGO_ENABLED=0
 ARG GOOS=linux
 ARG GOASRCH=amd64
 RUN go build -o /go/bin/main -ldflags '-w -s'
 
-FROM alpine:3
+FROM scratch
 
-COPY --from=Builder /go/bin/main /api/main
+COPY --from=builder /go/bin/main /api/main
 
 EXPOSE 80
 

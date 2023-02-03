@@ -3,6 +3,7 @@ package detail
 import (
 	"mysrtafes-backend/pkg/challenge/detail/goal"
 	"mysrtafes-backend/pkg/challenge/detail/result"
+	"mysrtafes-backend/pkg/game"
 )
 
 // DetailID
@@ -41,8 +42,27 @@ const (
 
 type Detail struct {
 	ID         ID
-	Goal       goal.Goal
+	Game       game.Game
+	Goals      []*goal.Goal
 	GoalDetail GoalDetail
 	Department Department
 	Result     *result.Result
+}
+
+func New(gameID game.ID, gameName game.Name, goalIDs []goal.ID, goalDetail GoalDetail, department Department) *Detail {
+	var goals []*goal.Goal
+	for _, goalID := range goalIDs {
+		goals = append(goals, &goal.Goal{
+			ID: goalID,
+		})
+	}
+	return &Detail{
+		Game: game.Game{
+			ID:   gameID,
+			Name: gameName,
+		},
+		Goals:      goals,
+		GoalDetail: goalDetail,
+		Department: department,
+	}
 }

@@ -14,6 +14,9 @@ type IsLive bool
 // 総配信時間
 type TotalLiveTime time.Duration
 
+// 配信タイトル
+type Title string
+
 // 配信リンク
 type LiveURL url.URL
 
@@ -26,6 +29,7 @@ type LiveStartTime time.Time
 // 配信詳細
 type Detail struct {
 	LiveStartTime LiveStartTime
+	Title         Title
 	LiveURL       LiveURL
 	Thumbnail     Thumbnail
 	TotalLiveTime TotalLiveTime

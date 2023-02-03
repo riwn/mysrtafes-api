@@ -49,6 +49,14 @@ type IsStream bool
 // 配信サイト
 type URL url.URL
 
+func NewURL(us string) (URL, error) {
+	u, err := url.Parse(us)
+	if err != nil {
+		return URL{}, err
+	}
+	return URL(*u), nil
+}
+
 func (u URL) URL() url.URL {
 	return url.URL(u)
 }
@@ -63,7 +71,7 @@ type Stream struct {
 // DiscordID
 type Discord string
 
-// 0≦len≦16 かつ@xxx形式
+// 0≦len≦16 かつxxxx#xxx形式
 func (d Discord) Valid() bool {
 	r := regexp.MustCompile(`.+#\d{4}`)
 	return len(d) > 5 && len(d) < 37 && r.MatchString(string(d))
@@ -118,4 +126,24 @@ type Challenge struct {
 	Stream     Stream
 	SNS        SNS
 	Comment    Comment
+}
+
+func New(name Name, readingName ReadingName, password Password, twitter Twitter, discord Discord, isStream IsStream, url URL, comment Comment, details []*detail.Detail) *Challenge {
+	return &Challenge{
+		Challenger: Challenger{
+			Name:        name,
+			ReadingName: readingName,
+			Password:    password,
+		},
+		Stream: Stream{
+			IsStream: isStream,
+			URL:      url,
+		},
+		SNS: SNS{
+			Discord: discord,
+			Twitter: twitter,
+		},
+		Comment: comment,
+		Detail:  details,
+	}
 }
