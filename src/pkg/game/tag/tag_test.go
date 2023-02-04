@@ -58,7 +58,7 @@ func TestDescription_Valid(t *testing.T) {
 		{
 			name: "空文字",
 			d:    "",
-			want: false,
+			want: true,
 		},
 		{
 			name: "長すぎる文字列",
@@ -78,6 +78,32 @@ func TestDescription_Valid(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.d.Valid(); got != tt.want {
 				t.Errorf("Description.Valid() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestID_Valid(t *testing.T) {
+	tests := []struct {
+		name string
+		i    ID
+		want bool
+	}{
+		{
+			name: "OK",
+			i:    1,
+			want: true,
+		},
+		{
+			name: "NG",
+			i:    0,
+			want: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.i.Valid(); got != tt.want {
+				t.Errorf("ID.Valid() = %v, want %v", got, tt.want)
 			}
 		})
 	}

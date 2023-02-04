@@ -9,6 +9,9 @@ coverage.html: coverage.out
 	go tool cover -html=../cover/coverage.out -o ../cover/coverage.html
 	rm -f ../cover/coverage.out
 
+run-api:
+	go run ./cmd/api/main.go
+
 build-api:
 	go build -o ./dist/api cmd/api/main.go
 

@@ -1,4 +1,4 @@
-package v1
+package challenge
 
 import (
 	"encoding/json"
@@ -13,7 +13,8 @@ import (
 	"time"
 )
 
-// TODO: Laravelに合わせてるのであまりにも過剰
+// TODO: Laravelに合わせてるのであまりにも過剰(単純な移行なため仕様合わせでこうなってる。)
+// TODO: あと、呼び出し側のことを考えるとjsonはキャメルケースのほうがよさそう。
 type TagResponse struct {
 	ID          tag.ID          `json:"id"`
 	Name        tag.Name        `json:"name"`
