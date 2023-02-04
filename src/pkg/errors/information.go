@@ -17,3 +17,13 @@ type Informator interface {
 	error
 	Information() *Information
 }
+
+// Problem Sample
+type InvalidParams struct {
+	Name  string
+	Param interface{}
+}
+
+func NewInvalidParams(name string, param interface{}) InvalidParams {
+	return InvalidParams{name, param}
+}

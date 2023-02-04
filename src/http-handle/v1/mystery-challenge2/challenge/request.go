@@ -5,6 +5,7 @@ import (
 	"mysrtafes-backend/pkg/challenge"
 	"mysrtafes-backend/pkg/challenge/detail"
 	"mysrtafes-backend/pkg/challenge/detail/goal"
+	"mysrtafes-backend/pkg/errors"
 	"mysrtafes-backend/pkg/game"
 	"net/http"
 )
@@ -37,7 +38,15 @@ func NewChallengeCreate(r *http.Request) (*challenge.Challenge, error) {
 	}{}
 	err := json.NewDecoder(r.Body).Decode(&body)
 	if err != nil {
-		return nil, err
+		return nil, errors.NewInvalidRequest(
+			errors.Layer_Request,
+			errors.NewInformation(
+				errors.ID_JsonDecodeError,
+				err.Error(),
+				nil,
+			),
+			"json decode error. bad format request",
+		)
 	}
 	// Detailの生成
 	var details []*detail.Detail
@@ -56,7 +65,17 @@ func NewChallengeCreate(r *http.Request) (*challenge.Challenge, error) {
 
 	url, err := challenge.NewURL(body.Challenge.URL)
 	if err != nil {
-		return nil, err
+		return nil, errors.NewInvalidRequest(
+			errors.Layer_Request,
+			errors.NewInformation(
+				errors.ID_InvalidParams,
+				err.Error(),
+				[]errors.InvalidParams{
+					errors.NewInvalidParams("url", body.Challenge.URL),
+				},
+			),
+			"json decode error. bad format request",
+		)
 	}
 
 	return challenge.New(

@@ -29,6 +29,7 @@ func (h *tagHandler) HandleTag(w http.ResponseWriter, r *http.Request) {
 func (h *tagHandler) create(w http.ResponseWriter, r *http.Request) {
 	tag, err := NewTagCreate(r)
 	if err != nil {
+		// TODO: logの改善(トレーサーなど)
 		log.Println(err)
 		errors.WriteError(w, err)
 		return

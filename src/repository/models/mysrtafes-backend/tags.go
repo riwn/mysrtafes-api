@@ -1,6 +1,7 @@
 package mysrtafes_backend
 
 import (
+	"mysrtafes-backend/pkg/errors"
 	"mysrtafes-backend/pkg/game/tag"
 	"time"
 
@@ -34,7 +35,15 @@ func (tagMaster) TableName() string {
 func (t *tagMaster) Create(db *gorm.DB) error {
 	result := db.Create(t)
 	if result.Error != nil {
-		return result.Error
+		return errors.NewInternalServerError(
+			errors.Layer_Model,
+			errors.NewInformation(
+				errors.ID_DBCreateError,
+				result.Error.Error(),
+				nil,
+			),
+			"create tag_masters error",
+		)
 	}
 	return nil
 }
