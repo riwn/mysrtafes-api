@@ -2,6 +2,7 @@ package tag
 
 import (
 	"log"
+	"mysrtafes-backend/http-handle/v1/errors"
 	"mysrtafes-backend/pkg/game/tag"
 	"net/http"
 )
@@ -29,22 +30,23 @@ func (h *tagHandler) create(w http.ResponseWriter, r *http.Request) {
 	tag, err := NewTagCreate(r)
 	if err != nil {
 		log.Println(err)
-		// TODO: errResponse
+		errors.WriteError(w, err)
 		return
 	}
 
 	tag, err = h.server.Create(tag)
 	if err != nil {
 		log.Println(err)
-		// TODO: errResponse
+		errors.WriteError(w, err)
 		return
 	}
 
 	if err := WriteCreateTag(w, tag); err != nil {
 		log.Println(err)
-		// TODO: errResponse
+		errors.WriteError(w, err)
 	}
 }
+
 func (h *tagHandler) read(w http.ResponseWriter, r *http.Request) {
 	http.NotFound(w, r)
 }

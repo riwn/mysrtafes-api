@@ -2,6 +2,7 @@ package challenge
 
 import (
 	"log"
+	"mysrtafes-backend/http-handle/v1/errors"
 	"mysrtafes-backend/pkg/challenge"
 	"net/http"
 )
@@ -29,20 +30,20 @@ func (h *challengeHandler) create(w http.ResponseWriter, r *http.Request) {
 	challenge, err := NewChallengeCreate(r)
 	if err != nil {
 		log.Println(err)
-		// TODO: errResponse
+		errors.WriteError(w, err)
 		return
 	}
 
 	challenge, err = h.server.Create(challenge)
 	if err != nil {
 		log.Println(err)
-		// TODO: errResponse
+		errors.WriteError(w, err)
 		return
 	}
 
 	if err := WriteCreateChallenge(w, challenge); err != nil {
 		log.Println(err)
-		// TODO: errResponse
+		errors.WriteError(w, err)
 	}
 }
 func (h *challengeHandler) read(w http.ResponseWriter, r *http.Request) {
