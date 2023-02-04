@@ -56,6 +56,9 @@ func (s services) gameRouter() http.Handler {
 func (s services) tagRouter() http.Handler {
 	r := chi.NewRouter()
 	tagHandler := v1Tag.NewTagHandler(s.Tag)
+	r.Get("/", tagHandler.HandleTag)
+	r.Get("/{tagID}", tagHandler.HandleTag)
 	r.Post("/", tagHandler.HandleTag)
+	r.Put("/", tagHandler.HandleTag)
 	return r
 }

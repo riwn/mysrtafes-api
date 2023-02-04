@@ -58,12 +58,32 @@ func (r *repository) TagCreate(tag *tag.Tag) (*tag.Tag, error) {
 	return model.NewEntity(), nil
 }
 
-func (r *repository) TagRead(tag.ID) (*tag.Tag, error) {
-	return nil, errors.New("not implemented TagRead")
+func (r *repository) TagRead(tagID tag.ID) (*tag.Tag, error) {
+	model := mysrtafes_backend.NewTagMasterFromID(tagID)
+	err := model.Read(r.DB)
+	return model.NewEntity(), err
 }
 
-func (r *repository) TagUpdate(*tag.Tag) (*tag.Tag, error) {
-	return nil, errors.New("not implemented TagUpdate")
+func (r *repository) TagFind(f *tag.FindOption) ([]*tag.Tag, error) {
+	models := mysrtafes_backend.NewTagMasters()
+	err := models.Find(r.DB, f)
+	entities := make([]*tag.Tag, 0, len(models))
+	for _, model := range models {
+		entities = append(entities, model.NewEntity())
+	}
+	return entities, err
+}
+
+func (r *repository) TagUpdate(tag *tag.Tag) (*tag.Tag, error) {
+	model := mysrtafes_backend.NewTagMaster(tag)
+	r.DB.Transaction(func(tx *gorm.DB) error {
+		err := model.Update(tx)
+		if err != nil {
+			return err
+		}
+		return nil
+	})
+	return model.NewEntity(), nil
 }
 
 func (r *repository) TagDelete(tag.ID) error {

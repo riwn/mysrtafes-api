@@ -18,6 +18,8 @@ const (
 	ID_InvalidParams
 	ID_JsonDecodeError
 	ID_DBCreateError
+	ID_DBReadError
+	ID_DBUpdateError
 )
 
 func (id ID) Detail() (Code, Message) {
@@ -28,6 +30,10 @@ func (id ID) Detail() (Code, Message) {
 		return "E00002", "json decode error"
 	case ID_DBCreateError:
 		return "E10001", "database create error"
+	case ID_DBReadError:
+		return "E10002", "database read error"
+	case ID_DBUpdateError:
+		return "E10003", "database update error"
 	default:
 		return "E99999", "unknown error"
 	}

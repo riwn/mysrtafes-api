@@ -21,6 +21,8 @@ func (h *tagHandler) HandleTag(w http.ResponseWriter, r *http.Request) {
 		h.read(w, r)
 	case http.MethodPost:
 		h.create(w, r)
+	case http.MethodPut:
+		h.update(w, r)
 	default:
 		http.NotFound(w, r)
 	}
@@ -49,5 +51,70 @@ func (h *tagHandler) create(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *tagHandler) read(w http.ResponseWriter, r *http.Request) {
-	http.NotFound(w, r)
+	tagID, err := NewTagRead(r)
+	if err != nil {
+		log.Println(err)
+		errors.WriteError(w, err)
+		return
+	}
+
+	// IDがないときは複数検索にする
+	if !tagID.Valid() {
+		h.find(w, r)
+		return
+	}
+
+	tag, err := h.server.Read(tagID)
+	if err != nil {
+		log.Println(err)
+		errors.WriteError(w, err)
+		return
+	}
+
+	if err := WriteReadTag(w, tag); err != nil {
+		log.Println(err)
+		errors.WriteError(w, err)
+	}
+}
+
+func (h *tagHandler) find(w http.ResponseWriter, r *http.Request) {
+	findOption, err := NewTagFindOption(r)
+	if err != nil {
+		log.Println(err)
+		errors.WriteError(w, err)
+		return
+	}
+
+	tags, err := h.server.Find(findOption)
+	if err != nil {
+		log.Println(err)
+		errors.WriteError(w, err)
+		return
+	}
+
+	if err := WriteFindTag(w, tags, findOption); err != nil {
+		log.Println(err)
+		errors.WriteError(w, err)
+	}
+}
+
+func (h *tagHandler) update(w http.ResponseWriter, r *http.Request) {
+	tag, err := NewTagUpdate(r)
+	if err != nil {
+		log.Println(err)
+		errors.WriteError(w, err)
+		return
+	}
+
+	tag, err = h.server.Update(tag)
+	if err != nil {
+		log.Println(err)
+		errors.WriteError(w, err)
+		return
+	}
+
+	if err := WriteUpdateTag(w, tag); err != nil {
+		log.Println(err)
+		errors.WriteError(w, err)
+	}
 }

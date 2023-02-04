@@ -13,12 +13,15 @@ import (
 	"time"
 )
 
-type Env struct {
+// 環境変数
+type osEnv struct {
+	Env      Env
 	Addr     string
 	DBConfig DBConfig
 }
 
-var env = Env{
+var env = osEnv{
+	Env:  os.Getenv("MYS_RTA_FES_ENV"),
 	Addr: os.Getenv("ADDR"),
 	DBConfig: DBConfig{
 		User: os.Getenv("MYS_RTA_FES_DB_USER"),
@@ -29,15 +32,27 @@ var env = Env{
 	},
 }
 
+// 動作環境
+type Env = string
+
+const (
+	Env_Dev        Env = "Dev"
+	Env_Production Env = "Production"
+)
+
+// 初期化
 func init() {
 	if env.Addr == "" {
 		env.Addr = ":80"
+	}
+	if env.Env == "" {
+		env.Env = Env_Dev
 	}
 }
 
 func main() {
 	// DBの生成
-	db, err := newDB(env.DBConfig)
+	db, err := newDB(env.DBConfig, env.Env)
 	if err != nil {
 		panic(err)
 	}

@@ -8,10 +8,11 @@ import (
 )
 
 type repository struct {
-	tag *Tag
-	err error
+	tag  *Tag
+	tags []*Tag
+	err  error
 	// flags
-	create, read, update, delete bool
+	create, read, find, update, delete bool
 }
 
 func (r repository) TagCreate(*Tag) (*Tag, error) {
@@ -25,6 +26,13 @@ func (r repository) TagRead(ID) (*Tag, error) {
 		return r.tag, r.err
 	}
 	return nil, fmt.Errorf("failed read")
+}
+
+func (r repository) TagFind(*FindOption) ([]*Tag, error) {
+	if r.find {
+		return r.tags, r.err
+	}
+	return nil, fmt.Errorf("failed find")
 }
 func (r repository) TagUpdate(*Tag) (*Tag, error) {
 	if r.update {

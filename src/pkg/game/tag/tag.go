@@ -46,3 +46,11 @@ func New(name Name, description Description) *Tag {
 		Description: description,
 	}
 }
+
+func NewWithID(id ID, name Name, description Description) *Tag {
+	return &Tag{
+		ID:          id,
+		Name:        name,
+		Description: description,
+	}
+}

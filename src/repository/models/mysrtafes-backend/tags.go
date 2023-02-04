@@ -6,10 +6,13 @@ import (
 	"time"
 
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type TagMaster interface {
 	Create(*gorm.DB) error
+	Read(db *gorm.DB) error
+	Update(db *gorm.DB) error
 	NewEntity() *tag.Tag
 }
 
@@ -23,8 +26,15 @@ type tagMaster struct {
 
 func NewTagMaster(tag *tag.Tag) TagMaster {
 	return &tagMaster{
+		ID:          tag.ID,
 		Name:        tag.Name,
 		Description: tag.Description,
+	}
+}
+
+func NewTagMasterFromID(tagID tag.ID) TagMaster {
+	return &tagMaster{
+		ID: tagID,
 	}
 }
 
@@ -48,6 +58,38 @@ func (t *tagMaster) Create(db *gorm.DB) error {
 	return nil
 }
 
+func (t *tagMaster) Read(db *gorm.DB) error {
+	result := db.Where("id = ?", t.ID).Find(&t)
+	if result.Error != nil {
+		return errors.NewInternalServerError(
+			errors.Layer_Model,
+			errors.NewInformation(
+				errors.ID_DBReadError,
+				result.Error.Error(),
+				nil,
+			),
+			"read tag_masters error",
+		)
+	}
+	return nil
+}
+
+func (t *tagMaster) Update(db *gorm.DB) error {
+	result := db.Updates(t)
+	if result.Error != nil {
+		return errors.NewInternalServerError(
+			errors.Layer_Model,
+			errors.NewInformation(
+				errors.ID_DBUpdateError,
+				result.Error.Error(),
+				nil,
+			),
+			"update tag_masters error",
+		)
+	}
+	return nil
+}
+
 func (t *tagMaster) NewEntity() *tag.Tag {
 	return &tag.Tag{
 		ID:          t.ID,
@@ -56,4 +98,39 @@ func (t *tagMaster) NewEntity() *tag.Tag {
 		CreatedAt:   t.CreatedAt,
 		UpdatedAt:   t.UpdatedAt,
 	}
+}
+
+type tagMasters []*tagMaster
+
+func NewTagMasters() tagMasters {
+	return []*tagMaster{}
+}
+
+func (t *tagMasters) Find(db *gorm.DB, findOption *tag.FindOption) error {
+	// 検索モードで調整
+	switch findOption.SearchMode {
+	case tag.SearchMode_Pagination:
+		db = db.Limit(findOption.Pagination.Limit).Offset(findOption.Pagination.Offset)
+	case tag.SearchMode_Seek:
+		db = db.Where("id > ?", findOption.Seek.LastID).Limit(findOption.Seek.Count)
+	}
+
+	switch findOption.OrderOption.Order {
+	case tag.Order_Name:
+		db.Order(clause.OrderByColumn{Column: clause.Column{Name: "name"}, Desc: findOption.OrderOption.Desc})
+	}
+
+	result := db.Find(&t)
+	if result.Error != nil {
+		return errors.NewInternalServerError(
+			errors.Layer_Model,
+			errors.NewInformation(
+				errors.ID_DBReadError,
+				result.Error.Error(),
+				nil,
+			),
+			"find tag_masters error",
+		)
+	}
+	return nil
 }

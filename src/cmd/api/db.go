@@ -15,7 +15,15 @@ type DBConfig struct {
 	Name string
 }
 
-func newDB(config DBConfig) (*gorm.DB, error) {
+func newDB(config DBConfig, env Env) (*gorm.DB, error) {
 	dsn := fmt.Sprintf("%s:%s@tcp(%s%s)/%s?charset=utf8mb4&parseTime=True&loc=Local", config.User, config.Pass, config.Host, config.Port, config.Name)
-	return gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	if err != nil {
+		return nil, err
+	}
+	// NOTE: dev環境の時はSQLはすべてログに吐く
+	if env == Env_Dev {
+		db = db.Debug()
+	}
+	return db, nil
 }

@@ -4,10 +4,11 @@ services:
     ports:
       - 3000:80
     environment:
+      MYS_RTA_FES_ENV: 'Dev'
       ADDR: ':80'
       MYS_RTA_FES_DB_USER: 'root'
       MYS_RTA_FES_DB_PASS: 'root'
-      MYS_RTA_FES_DB_HOST: 'db'
+      MYS_RTA_FES_DB_HOST: 'db.local-mysrtafes-api'
       MYS_RTA_FES_DB_PORT: ':3306'
       MYS_RTA_FES_DB_NAME: 'mysrtafes_backend'
   networks:

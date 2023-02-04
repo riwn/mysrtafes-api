@@ -5,6 +5,7 @@ import "mysrtafes-backend/pkg/errors"
 type Repository interface {
 	TagCreate(*Tag) (*Tag, error)
 	TagRead(ID) (*Tag, error)
+	TagFind(*FindOption) ([]*Tag, error)
 	TagUpdate(*Tag) (*Tag, error)
 	TagDelete(ID) error
 }
@@ -12,6 +13,7 @@ type Repository interface {
 type Server interface {
 	Create(*Tag) (*Tag, error)
 	Read(ID) (*Tag, error)
+	Find(*FindOption) ([]*Tag, error)
 	Update(*Tag) (*Tag, error)
 	Delete(ID) error
 }
@@ -57,7 +59,7 @@ func (s *server) Create(t *Tag) (*Tag, error) {
 	return s.repository.TagCreate(t)
 }
 
-// GameTagの読み込み
+// GameTagの検索
 func (s *server) Read(id ID) (*Tag, error) {
 	// IDのValidate
 	if !id.Valid() {
@@ -74,6 +76,11 @@ func (s *server) Read(id ID) (*Tag, error) {
 		)
 	}
 	return s.repository.TagRead(id)
+}
+
+// GameTagの複数検索
+func (s *server) Find(f *FindOption) ([]*Tag, error) {
+	return s.repository.TagFind(f)
 }
 
 // GameTagの更新
