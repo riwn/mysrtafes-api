@@ -1,8 +1,8 @@
 package handle
 
 import (
-	v1Challenge "mysrtafes-backend/http-handle/mys-challenge/v1/challenge"
-	v1Tag "mysrtafes-backend/http-handle/mys-challenge/v1/tag"
+	v1Tag "mysrtafes-backend/http-handle/v1/game/tag"
+	v1Challenge "mysrtafes-backend/http-handle/v1/mystery-challenge2/challenge"
 	"mysrtafes-backend/pkg/challenge"
 	"mysrtafes-backend/pkg/game/tag"
 	"net/http"
