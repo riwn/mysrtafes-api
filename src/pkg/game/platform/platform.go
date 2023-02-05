@@ -1,9 +1,12 @@
 package platform
 
-// TODO: Validationメソッドの追加
-
 // PlatformID
 type ID uint64
+
+// 1 ≦ id
+func (i ID) Valid() bool {
+	return i > 0
+}
 
 // プラットフォーム名
 type Name string

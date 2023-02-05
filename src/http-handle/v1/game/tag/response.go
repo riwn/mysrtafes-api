@@ -7,8 +7,6 @@ import (
 	"time"
 )
 
-// TODO: Laravelに合わせてるのであまりにも過剰(単純な移行なため仕様合わせでこうなってる。)
-// TODO: あと、呼び出し側のことを考えるとjsonはキャメルケースのほうがよさそう。
 type TagResponse struct {
 	ID          tag.ID          `json:"id"`
 	Name        tag.Name        `json:"name"`
@@ -17,18 +15,22 @@ type TagResponse struct {
 	UpdatedAt   time.Time       `json:"updated_at"`
 }
 
+// write create response for tag
 func WriteCreateTag(w http.ResponseWriter, tag *tag.Tag) error {
 	return writeTag(w, http.StatusCreated, "success create tag", tag)
 }
 
+// write read response for tag
 func WriteReadTag(w http.ResponseWriter, tag *tag.Tag) error {
 	return writeTag(w, http.StatusOK, "success read tag", tag)
 }
 
+// write update response for tag
 func WriteUpdateTag(w http.ResponseWriter, tag *tag.Tag) error {
 	return writeTag(w, http.StatusOK, "success update tag", tag)
 }
 
+// write find response for tag
 func WriteFindTag(w http.ResponseWriter, tags []*tag.Tag, option *tag.FindOption) error {
 	return writeTags(w, http.StatusOK, "success find tag", tags, option)
 }

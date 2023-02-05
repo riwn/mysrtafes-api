@@ -4,8 +4,6 @@ import (
 	"time"
 )
 
-// TODO: Validationメソッドの追加
-
 // TagID
 type ID uint64
 

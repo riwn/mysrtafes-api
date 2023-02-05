@@ -75,6 +75,7 @@ func (t *tagMaster) Read(db *gorm.DB) error {
 }
 
 func (t *tagMaster) Update(db *gorm.DB) error {
+	// TODO: 更新の時だけCreatedAtがなぜか入ってこない問題があるっぽい。
 	result := db.Updates(t)
 	if result.Error != nil {
 		return errors.NewInternalServerError(
