@@ -2,7 +2,6 @@ package platform
 
 import (
 	"encoding/json"
-	"log"
 	"mysrtafes-backend/pkg/errors"
 	"mysrtafes-backend/pkg/game/platform"
 	"net/http"
@@ -44,7 +43,7 @@ func NewPlatformID(r *http.Request) (platform.ID, error) {
 	if platformIDStr == "" {
 		return 0, nil
 	}
-	log.Print(platformIDStr)
+
 	platformID, err := strconv.Atoi(platformIDStr)
 	if err != nil {
 		return 0, errors.NewInvalidRequest(

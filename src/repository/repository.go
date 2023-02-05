@@ -3,6 +3,7 @@ package repository
 import (
 	"errors"
 	"mysrtafes-backend/pkg/challenge"
+	"mysrtafes-backend/pkg/game"
 	"mysrtafes-backend/pkg/game/platform"
 	"mysrtafes-backend/pkg/game/tag"
 	mysrtafes_backend "mysrtafes-backend/repository/models/mysrtafes-backend"
@@ -20,7 +21,7 @@ type Repository interface {
 	// detail.Repository
 	// goal.Repository
 	// result.Repository
-	// game.Repository
+	game.Repository
 	// link.Repository
 	platform.Repository
 	tag.Repository
@@ -135,6 +136,26 @@ func (r *repository) PlatformUpdate(platform *platform.Platform) (*platform.Plat
 func (r *repository) PlatformDelete(platformID platform.ID) error {
 	model := mysrtafes_backend.NewPlatformMasterFromID(platformID)
 	return model.Delete(r.DB)
+}
+
+func (r *repository) GameCreate(*game.Game) (*game.Game, error) {
+	return nil, errors.New("no implements")
+}
+
+func (r *repository) GameRead(game.ID) (*game.Game, error) {
+	return nil, errors.New("no implements")
+}
+
+func (r *repository) GameFind(*game.FindOption) ([]*game.Game, error) {
+	return nil, errors.New("no implements")
+}
+
+func (r *repository) GameUpdate(*game.Game) (*game.Game, error) {
+	return nil, errors.New("no implements")
+}
+
+func (r *repository) GameDelete(game.ID) error {
+	return errors.New("no implements")
 }
 
 func (r *repository) Close() error {

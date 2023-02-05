@@ -21,9 +21,9 @@ func (n Name) Valid() bool {
 // プラットフォーム説明
 type Description string
 
-// 1 ≦ Description.length ≦ 2049
+// 0 ≦ Description.length ≦ 2048
 func (d Description) Valid() bool {
-	return len(d) > 0 && len(d) < 2049
+	return len(d) >= 0 && len(d) <= 2048
 }
 
 // プラットフォーム
@@ -41,6 +41,7 @@ func New(name Name, description Description) *Platform {
 		Description: description,
 	}
 }
+
 func NewWithID(id ID, name Name, description Description) *Platform {
 	return &Platform{
 		ID:          id,

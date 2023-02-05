@@ -5,6 +5,7 @@ import (
 	"fmt"
 	handle "mysrtafes-backend/http-handle"
 	"mysrtafes-backend/pkg/challenge"
+	"mysrtafes-backend/pkg/game"
 	"mysrtafes-backend/pkg/game/platform"
 	"mysrtafes-backend/pkg/game/tag"
 	"mysrtafes-backend/repository"
@@ -61,6 +62,7 @@ func main() {
 	// Serviceの生成
 	services := handle.NewServices(
 		env.Addr,
+		game.NewServer(dbRepository),
 		challenge.NewServer(dbRepository),
 		tag.NewServer(dbRepository),
 		platform.NewServer(dbRepository),

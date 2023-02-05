@@ -2,7 +2,6 @@ package tag
 
 import (
 	"encoding/json"
-	"log"
 	"mysrtafes-backend/pkg/errors"
 	"mysrtafes-backend/pkg/game/tag"
 	"net/http"
@@ -44,7 +43,7 @@ func NewTagID(r *http.Request) (tag.ID, error) {
 	if tagIDStr == "" {
 		return 0, nil
 	}
-	log.Print(tagIDStr)
+
 	tagID, err := strconv.Atoi(tagIDStr)
 	if err != nil {
 		return 0, errors.NewInvalidRequest(

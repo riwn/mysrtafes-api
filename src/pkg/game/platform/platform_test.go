@@ -58,7 +58,7 @@ func TestDescription_Valid(t *testing.T) {
 		{
 			name: "空文字",
 			d:    "",
-			want: false,
+			want: true,
 		},
 		{
 			name: "長すぎる文字列",
