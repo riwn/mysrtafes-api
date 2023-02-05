@@ -3,6 +3,7 @@ package repository
 import (
 	"errors"
 	"mysrtafes-backend/pkg/challenge"
+	"mysrtafes-backend/pkg/game/platform"
 	"mysrtafes-backend/pkg/game/tag"
 	mysrtafes_backend "mysrtafes-backend/repository/models/mysrtafes-backend"
 
@@ -21,7 +22,7 @@ type Repository interface {
 	// result.Repository
 	// game.Repository
 	// link.Repository
-	// platform.Repository
+	platform.Repository
 	tag.Repository
 	Close() error
 }
@@ -88,6 +89,51 @@ func (r *repository) TagUpdate(tag *tag.Tag) (*tag.Tag, error) {
 
 func (r *repository) TagDelete(tagID tag.ID) error {
 	model := mysrtafes_backend.NewTagMasterFromID(tagID)
+	return model.Delete(r.DB)
+}
+
+func (r *repository) PlatformCreate(platform *platform.Platform) (*platform.Platform, error) {
+	model := mysrtafes_backend.NewPlatformMaster(platform)
+	r.DB.Transaction(func(tx *gorm.DB) error {
+		err := model.Create(tx)
+		if err != nil {
+			return err
+		}
+		return nil
+	})
+	return model.NewEntity(), nil
+}
+
+func (r *repository) PlatformRead(platformID platform.ID) (*platform.Platform, error) {
+	model := mysrtafes_backend.NewPlatformMasterFromID(platformID)
+	err := model.Read(r.DB)
+	return model.NewEntity(), err
+}
+
+func (r *repository) PlatformFind(p *platform.FindOption) ([]*platform.Platform, error) {
+	models := mysrtafes_backend.NewPlatformMasters()
+	err := models.Find(r.DB, p)
+	entities := make([]*platform.Platform, 0, len(models))
+	for _, model := range models {
+		entities = append(entities, model.NewEntity())
+	}
+	return entities, err
+}
+
+func (r *repository) PlatformUpdate(platform *platform.Platform) (*platform.Platform, error) {
+	model := mysrtafes_backend.NewPlatformMaster(platform)
+	r.DB.Transaction(func(tx *gorm.DB) error {
+		err := model.Update(tx)
+		if err != nil {
+			return err
+		}
+		return nil
+	})
+	return model.NewEntity(), nil
+}
+
+func (r *repository) PlatformDelete(platformID platform.ID) error {
+	model := mysrtafes_backend.NewPlatformMasterFromID(platformID)
 	return model.Delete(r.DB)
 }
 

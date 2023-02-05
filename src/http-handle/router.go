@@ -1,9 +1,11 @@
 package handle
 
 import (
+	v1Platform "mysrtafes-backend/http-handle/v1/game/platform"
 	v1Tag "mysrtafes-backend/http-handle/v1/game/tag"
 	v1Challenge "mysrtafes-backend/http-handle/v1/mystery-challenge2/challenge"
 	"mysrtafes-backend/pkg/challenge"
+	"mysrtafes-backend/pkg/game/platform"
 	"mysrtafes-backend/pkg/game/tag"
 	"net/http"
 
@@ -15,11 +17,12 @@ type services struct {
 	addr      string
 	Challenge challenge.Server
 	Tag       tag.Server
+	Platform  platform.Server
 	// TODO: HandleをもつServiceの追加
 }
 
-func NewServices(addr string, challenge challenge.Server, tag tag.Server) services {
-	return services{addr, challenge, tag}
+func NewServices(addr string, challenge challenge.Server, tag tag.Server, platform platform.Server) services {
+	return services{addr, challenge, tag, platform}
 }
 
 func (s services) Server() *http.Server {
@@ -49,6 +52,7 @@ func (s services) mysChallengeRouter() http.Handler {
 func (s services) gameRouter() http.Handler {
 	r := chi.NewRouter()
 	r.Mount("/tags", s.tagRouter())
+	r.Mount("/platforms", s.platformRouter())
 	// TODO: Routerの追加
 	return r
 }
@@ -61,5 +65,16 @@ func (s services) tagRouter() http.Handler {
 	r.Delete("/{tagID}", tagHandler.HandleTag)
 	r.Post("/", tagHandler.HandleTag)
 	r.Put("/", tagHandler.HandleTag)
+	return r
+}
+
+func (s services) platformRouter() http.Handler {
+	r := chi.NewRouter()
+	platformHandler := v1Platform.NewPlatformHandler(s.Platform)
+	r.Get("/", platformHandler.HandlePlatform)
+	r.Get("/{platformID}", platformHandler.HandlePlatform)
+	r.Delete("/{platformID}", platformHandler.HandlePlatform)
+	r.Post("/", platformHandler.HandlePlatform)
+	r.Put("/", platformHandler.HandlePlatform)
 	return r
 }

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	handle "mysrtafes-backend/http-handle"
 	"mysrtafes-backend/pkg/challenge"
+	"mysrtafes-backend/pkg/game/platform"
 	"mysrtafes-backend/pkg/game/tag"
 	"mysrtafes-backend/repository"
 	"os"
@@ -62,6 +63,7 @@ func main() {
 		env.Addr,
 		challenge.NewServer(dbRepository),
 		tag.NewServer(dbRepository),
+		platform.NewServer(dbRepository),
 	)
 
 	// 終了シグナル受け取りContextの定義
