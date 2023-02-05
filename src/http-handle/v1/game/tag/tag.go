@@ -23,6 +23,8 @@ func (h *tagHandler) HandleTag(w http.ResponseWriter, r *http.Request) {
 		h.create(w, r)
 	case http.MethodPut:
 		h.update(w, r)
+	case http.MethodDelete:
+		h.delete(w, r)
 	default:
 		http.NotFound(w, r)
 	}
@@ -51,7 +53,7 @@ func (h *tagHandler) create(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *tagHandler) read(w http.ResponseWriter, r *http.Request) {
-	tagID, err := NewTagRead(r)
+	tagID, err := NewTagID(r)
 	if err != nil {
 		log.Println(err)
 		errors.WriteError(w, err)
@@ -114,6 +116,27 @@ func (h *tagHandler) update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := WriteUpdateTag(w, tag); err != nil {
+		log.Println(err)
+		errors.WriteError(w, err)
+	}
+}
+
+func (h *tagHandler) delete(w http.ResponseWriter, r *http.Request) {
+	tagID, err := NewTagID(r)
+	if err != nil {
+		log.Println(err)
+		errors.WriteError(w, err)
+		return
+	}
+
+	err = h.server.Delete(tagID)
+	if err != nil {
+		log.Println(err)
+		errors.WriteError(w, err)
+		return
+	}
+
+	if err := WriteDeleteTag(w, tagID); err != nil {
 		log.Println(err)
 		errors.WriteError(w, err)
 	}

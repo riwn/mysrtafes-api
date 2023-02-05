@@ -30,6 +30,21 @@ func WriteUpdateTag(w http.ResponseWriter, tag *tag.Tag) error {
 	return writeTag(w, http.StatusOK, "success update tag", tag)
 }
 
+// write delete response for tag
+func WriteDeleteTag(w http.ResponseWriter, tagID tag.ID) error {
+	body := struct {
+		Code    int    `json:"code"`
+		Message string `json:"message"`
+		Data    tag.ID `json:"deleteID"`
+	}{
+		Code:    http.StatusOK,
+		Message: "success delete tag",
+		Data:    tagID,
+	}
+	w.Header().Set("Content-Type", "application/json")
+	return json.NewEncoder(w).Encode(&body)
+}
+
 // write find response for tag
 func WriteFindTag(w http.ResponseWriter, tags []*tag.Tag, option *tag.FindOption) error {
 	return writeTags(w, http.StatusOK, "success find tag", tags, option)

@@ -38,7 +38,7 @@ func NewTagCreate(r *http.Request) (*tag.Tag, error) {
 	), nil
 }
 
-func NewTagRead(r *http.Request) (tag.ID, error) {
+func NewTagID(r *http.Request) (tag.ID, error) {
 	tagIDStr := chi.URLParam(r, "tagID")
 	// 空文字の時、0にして複数検索と判断
 	if tagIDStr == "" {

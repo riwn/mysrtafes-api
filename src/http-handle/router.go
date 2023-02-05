@@ -58,6 +58,7 @@ func (s services) tagRouter() http.Handler {
 	tagHandler := v1Tag.NewTagHandler(s.Tag)
 	r.Get("/", tagHandler.HandleTag)
 	r.Get("/{tagID}", tagHandler.HandleTag)
+	r.Delete("/{tagID}", tagHandler.HandleTag)
 	r.Post("/", tagHandler.HandleTag)
 	r.Put("/", tagHandler.HandleTag)
 	return r

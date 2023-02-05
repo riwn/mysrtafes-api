@@ -20,6 +20,7 @@ const (
 	ID_DBCreateError
 	ID_DBReadError
 	ID_DBUpdateError
+	ID_DBDeleteError
 )
 
 func (id ID) Detail() (Code, Message) {
@@ -34,6 +35,8 @@ func (id ID) Detail() (Code, Message) {
 		return "E10002", "database read error"
 	case ID_DBUpdateError:
 		return "E10003", "database update error"
+	case ID_DBDeleteError:
+		return "E10004", "database delete error"
 	default:
 		return "E99999", "unknown error"
 	}

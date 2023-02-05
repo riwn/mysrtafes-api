@@ -13,6 +13,7 @@ type TagMaster interface {
 	Create(*gorm.DB) error
 	Read(db *gorm.DB) error
 	Update(db *gorm.DB) error
+	Delete(db *gorm.DB) error
 	NewEntity() *tag.Tag
 }
 
@@ -86,6 +87,22 @@ func (t *tagMaster) Update(db *gorm.DB) error {
 				nil,
 			),
 			"update tag_masters error",
+		)
+	}
+	return nil
+}
+
+func (t *tagMaster) Delete(db *gorm.DB) error {
+	result := db.Delete(t)
+	if result.Error != nil {
+		return errors.NewInternalServerError(
+			errors.Layer_Model,
+			errors.NewInformation(
+				errors.ID_DBDeleteError,
+				result.Error.Error(),
+				nil,
+			),
+			"delete tag_masters error",
 		)
 	}
 	return nil

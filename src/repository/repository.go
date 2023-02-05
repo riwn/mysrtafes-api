@@ -86,8 +86,9 @@ func (r *repository) TagUpdate(tag *tag.Tag) (*tag.Tag, error) {
 	return model.NewEntity(), nil
 }
 
-func (r *repository) TagDelete(tag.ID) error {
-	return errors.New("not implemented TagDelete")
+func (r *repository) TagDelete(tagID tag.ID) error {
+	model := mysrtafes_backend.NewTagMasterFromID(tagID)
+	return model.Delete(r.DB)
 }
 
 func (r *repository) Close() error {
