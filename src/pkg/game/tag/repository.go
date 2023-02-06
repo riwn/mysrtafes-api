@@ -50,7 +50,7 @@ func (s *server) Create(t *Tag) (*Tag, error) {
 				errors.ID_InvalidParams,
 				"",
 				[]errors.InvalidParams{
-					errors.NewInvalidParams("description", t.Name),
+					errors.NewInvalidParams("description", t.Description),
 				},
 			),
 			"Description Valid error",

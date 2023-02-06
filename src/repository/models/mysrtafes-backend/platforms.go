@@ -39,6 +39,16 @@ func NewPlatformMasterFromID(platformID platform.ID) PlatformMaster {
 	}
 }
 
+func NewPlatformListFromIDs(platformIDs []platform.ID) []*platformMaster {
+	platforms := make([]*platformMaster, 0, len(platformIDs))
+	for _, platformID := range platformIDs {
+		platforms = append(platforms, &platformMaster{
+			ID: platformID,
+		})
+	}
+	return platforms
+}
+
 func (platformMaster) TableName() string {
 	return "platform_masters"
 }

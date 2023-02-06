@@ -66,6 +66,10 @@ func (r ReleaseDate) Time() time.Time {
 	return time.Time(r)
 }
 
+func (r ReleaseDate) String() string {
+	return r.Time().Format("2006-01-02")
+}
+
 // LinkID
 type LinkID uint64
 
@@ -94,8 +98,9 @@ func NewURL(us string) (URL, error) {
 	return URL(*u), nil
 }
 
-func (u URL) URL() url.URL {
-	return url.URL(u)
+func (u URL) URL() *url.URL {
+	url := url.URL(u)
+	return &url
 }
 
 // サイト先の説明
@@ -113,6 +118,8 @@ type Link struct {
 	Title           Title
 	URL             URL
 	LinkDescription LinkDescription
+	CreatedAt       time.Time
+	UpdatedAt       time.Time
 }
 
 func NewLink(title Title, url URL, description LinkDescription) *Link {

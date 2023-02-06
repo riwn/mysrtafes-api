@@ -50,14 +50,14 @@ func (r *repository) ChallengeDelete(challenge.ID) error {
 
 func (r *repository) TagCreate(tag *tag.Tag) (*tag.Tag, error) {
 	model := mysrtafes_backend.NewTagMaster(tag)
-	r.DB.Transaction(func(tx *gorm.DB) error {
+	err := r.DB.Transaction(func(tx *gorm.DB) error {
 		err := model.Create(tx)
 		if err != nil {
 			return err
 		}
 		return nil
 	})
-	return model.NewEntity(), nil
+	return model.NewEntity(), err
 }
 
 func (r *repository) TagRead(tagID tag.ID) (*tag.Tag, error) {
@@ -78,14 +78,14 @@ func (r *repository) TagFind(f *tag.FindOption) ([]*tag.Tag, error) {
 
 func (r *repository) TagUpdate(tag *tag.Tag) (*tag.Tag, error) {
 	model := mysrtafes_backend.NewTagMaster(tag)
-	r.DB.Transaction(func(tx *gorm.DB) error {
+	err := r.DB.Transaction(func(tx *gorm.DB) error {
 		err := model.Update(tx)
 		if err != nil {
 			return err
 		}
 		return nil
 	})
-	return model.NewEntity(), nil
+	return model.NewEntity(), err
 }
 
 func (r *repository) TagDelete(tagID tag.ID) error {
@@ -95,14 +95,14 @@ func (r *repository) TagDelete(tagID tag.ID) error {
 
 func (r *repository) PlatformCreate(platform *platform.Platform) (*platform.Platform, error) {
 	model := mysrtafes_backend.NewPlatformMaster(platform)
-	r.DB.Transaction(func(tx *gorm.DB) error {
+	err := r.DB.Transaction(func(tx *gorm.DB) error {
 		err := model.Create(tx)
 		if err != nil {
 			return err
 		}
 		return nil
 	})
-	return model.NewEntity(), nil
+	return model.NewEntity(), err
 }
 
 func (r *repository) PlatformRead(platformID platform.ID) (*platform.Platform, error) {
@@ -123,14 +123,14 @@ func (r *repository) PlatformFind(p *platform.FindOption) ([]*platform.Platform,
 
 func (r *repository) PlatformUpdate(platform *platform.Platform) (*platform.Platform, error) {
 	model := mysrtafes_backend.NewPlatformMaster(platform)
-	r.DB.Transaction(func(tx *gorm.DB) error {
+	err := r.DB.Transaction(func(tx *gorm.DB) error {
 		err := model.Update(tx)
 		if err != nil {
 			return err
 		}
 		return nil
 	})
-	return model.NewEntity(), nil
+	return model.NewEntity(), err
 }
 
 func (r *repository) PlatformDelete(platformID platform.ID) error {
@@ -138,8 +138,21 @@ func (r *repository) PlatformDelete(platformID platform.ID) error {
 	return model.Delete(r.DB)
 }
 
-func (r *repository) GameCreate(*game.Game) (*game.Game, error) {
-	return nil, errors.New("no implements")
+func (r *repository) GameCreate(game *game.Game, platformIDs []platform.ID, tagIDs []tag.ID) (*game.Game, error) {
+	tags := mysrtafes_backend.NewTagMasterListFromIDs(tagIDs)
+	platforms := mysrtafes_backend.NewPlatformListFromIDs(platformIDs)
+	model := mysrtafes_backend.NewGameMaster(game, platforms, tags)
+	err := r.DB.Transaction(func(tx *gorm.DB) error {
+		err := model.Create(tx)
+		if err != nil {
+			return err
+		}
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	return model.NewEntity()
 }
 
 func (r *repository) GameRead(game.ID) (*game.Game, error) {

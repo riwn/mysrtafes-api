@@ -21,6 +21,7 @@ type tagMaster struct {
 	ID          tag.ID `gorm:"primaryKey;autoIncrement"`
 	Name        tag.Name
 	Description tag.Description
+	Game        []*gameMaster `gorm:"many2many:game_tag_links;"`
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
 }
@@ -37,6 +38,16 @@ func NewTagMasterFromID(tagID tag.ID) TagMaster {
 	return &tagMaster{
 		ID: tagID,
 	}
+}
+
+func NewTagMasterListFromIDs(tagIDs []tag.ID) []*tagMaster {
+	tags := make([]*tagMaster, 0, len(tagIDs))
+	for _, tagID := range tagIDs {
+		tags = append(tags, &tagMaster{
+			ID: tagID,
+		})
+	}
+	return tags
 }
 
 func (tagMaster) TableName() string {

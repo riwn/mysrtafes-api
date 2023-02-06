@@ -21,6 +21,7 @@ const (
 	ID_DBReadError
 	ID_DBUpdateError
 	ID_DBDeleteError
+	ID_DBDataFormatError
 )
 
 func (id ID) Detail() (Code, Message) {
@@ -37,6 +38,8 @@ func (id ID) Detail() (Code, Message) {
 		return "E10003", "database update error"
 	case ID_DBDeleteError:
 		return "E10004", "database delete error"
+	case ID_DBDataFormatError:
+		return "E10005", "database data format error"
 	default:
 		return "E99999", "unknown error"
 	}

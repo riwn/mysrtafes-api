@@ -13,9 +13,18 @@ type GameResponse struct {
 	Description game.Description `json:"description"`
 	Publisher   game.Publisher   `json:"publisher"`
 	Developer   game.Developer   `json:"developer"`
-	ReleaseDate game.ReleaseDate `json:"release_date"`
+	Links       []LinkResponse   `json:"links"`
 	CreatedAt   time.Time        `json:"created_at"`
 	UpdatedAt   time.Time        `json:"updated_at"`
+	// TODO: LaravelでなぜかReleaseDateを追加するの忘れてた。
+	// ReleaseDate string           `json:"release_date"`
+}
+
+type LinkResponse struct {
+	URL         string               `json:"url"`
+	Description game.LinkDescription `json:"description"`
+	CreatedAt   time.Time            `json:"created_at"`
+	UpdatedAt   time.Time            `json:"updated_at"`
 }
 
 func WriteCreateGame(w http.ResponseWriter, game *game.Game) error {
@@ -53,6 +62,16 @@ func WriteFindGame(w http.ResponseWriter, games []*game.Game, option *game.FindO
 }
 
 func writeGame(w http.ResponseWriter, statusCode int, msg string, game *game.Game) error {
+	links := make([]LinkResponse, 0, len(game.Links))
+	for _, link := range game.Links {
+		links = append(links, LinkResponse{
+			URL:         link.URL.URL().String(),
+			Description: link.LinkDescription,
+			CreatedAt:   link.CreatedAt,
+			UpdatedAt:   link.UpdatedAt,
+		})
+
+	}
 	body := struct {
 		Code    int          `json:"code"`
 		Message string       `json:"message"`
@@ -66,9 +85,10 @@ func writeGame(w http.ResponseWriter, statusCode int, msg string, game *game.Gam
 			Description: game.Description,
 			Publisher:   game.Publisher,
 			Developer:   game.Developer,
-			ReleaseDate: game.ReleaseDate,
+			Links:       links,
 			CreatedAt:   game.CreatedAt,
 			UpdatedAt:   game.UpdatedAt,
+			// ReleaseDate: game.ReleaseDate.String(),
 		},
 	}
 
@@ -88,9 +108,9 @@ func writeGames(w http.ResponseWriter, statusCode int, msg string, games []*game
 				Description: game.Description,
 				Publisher:   game.Publisher,
 				Developer:   game.Developer,
-				ReleaseDate: game.ReleaseDate,
 				CreatedAt:   game.CreatedAt,
 				UpdatedAt:   game.UpdatedAt,
+				// ReleaseDate: game.ReleaseDate.String(),
 			},
 		)
 		if lastID < game.ID {

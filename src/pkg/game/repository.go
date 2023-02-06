@@ -1,12 +1,13 @@
 package game
 
 import (
+	"mysrtafes-backend/pkg/errors"
 	"mysrtafes-backend/pkg/game/platform"
 	"mysrtafes-backend/pkg/game/tag"
 )
 
 type Repository interface {
-	GameCreate(*Game) (*Game, error)
+	GameCreate(*Game, []platform.ID, []tag.ID) (*Game, error)
 	GameRead(ID) (*Game, error)
 	GameFind(*FindOption) ([]*Game, error)
 	GameUpdate(*Game) (*Game, error)
@@ -30,8 +31,96 @@ func NewServer(repo Repository) Server {
 }
 
 func (s *server) Create(g *Game, platformIDs []platform.ID, tagIDs []tag.ID) (*Game, error) {
-	// TODO: Validate
-	return s.repository.GameCreate(g)
+	// NameのValidate
+	if !g.Name.Valid() {
+		return nil, errors.NewInvalidRequest(
+			errors.Layer_Request,
+			errors.NewInformation(
+				errors.ID_InvalidParams,
+				"",
+				[]errors.InvalidParams{
+					errors.NewInvalidParams("name", g.Name),
+				},
+			),
+			"Name Valid error",
+		)
+	}
+	// DescriptionのValidate
+	if !g.Description.Valid() {
+		return nil, errors.NewInvalidRequest(
+			errors.Layer_Request,
+			errors.NewInformation(
+				errors.ID_InvalidParams,
+				"",
+				[]errors.InvalidParams{
+					errors.NewInvalidParams("description", g.Description),
+				},
+			),
+			"Description Valid error",
+		)
+	}
+
+	// PublisherのValidate
+	if !g.Publisher.Valid() {
+		return nil, errors.NewInvalidRequest(
+			errors.Layer_Request,
+			errors.NewInformation(
+				errors.ID_InvalidParams,
+				"",
+				[]errors.InvalidParams{
+					errors.NewInvalidParams("publisher", g.Publisher),
+				},
+			),
+			"Publisher Valid error",
+		)
+	}
+
+	// DeveloperのValidate
+	if !g.Developer.Valid() {
+		return nil, errors.NewInvalidRequest(
+			errors.Layer_Request,
+			errors.NewInformation(
+				errors.ID_InvalidParams,
+				"",
+				[]errors.InvalidParams{
+					errors.NewInvalidParams("developer", g.Developer),
+				},
+			),
+			"Developer Valid error",
+		)
+	}
+
+	for _, link := range g.Links {
+		// link.TitleのValidate
+		if !link.Title.Valid() {
+			return nil, errors.NewInvalidRequest(
+				errors.Layer_Request,
+				errors.NewInformation(
+					errors.ID_InvalidParams,
+					"",
+					[]errors.InvalidParams{
+						errors.NewInvalidParams("links.title", link.Title),
+					},
+				),
+				"links.title Valid error",
+			)
+		}
+		// link.DescriptionのValidate
+		if !link.LinkDescription.Valid() {
+			return nil, errors.NewInvalidRequest(
+				errors.Layer_Request,
+				errors.NewInformation(
+					errors.ID_InvalidParams,
+					"",
+					[]errors.InvalidParams{
+						errors.NewInvalidParams("links.description", link.LinkDescription),
+					},
+				),
+				"links.description Valid error",
+			)
+		}
+	}
+	return s.repository.GameCreate(g, platformIDs, tagIDs)
 }
 
 func (s *server) Read(id ID) (*Game, error) {
