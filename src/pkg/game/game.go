@@ -18,7 +18,7 @@ func (i ID) Valid() bool {
 // ゲームタイトル
 type Name string
 
-// 1 ≦ name.length ≦ 256
+// 1 ≦ name.length ≦ 255
 func (n Name) Valid() bool {
 	return len(n) > 0 && len(n) < 256
 }
@@ -26,31 +26,35 @@ func (n Name) Valid() bool {
 // ゲーム説明
 type Description string
 
-// 1 ≦ Description.length ≦ 2049
+// 0 ≦ Description.length ≦ 2048
 func (d Description) Valid() bool {
-	return len(d) > 0 && len(d) < 2049
+	// NOTE: 必須情報ではない
+	return len(d) >= 0 && len(d) <= 2048
 }
 
 // 企画元
 type Publisher string
 
-// 1 ≦ Publisher.length ≦ 256
+// 0 ≦ Publisher.length ≦ 255
 func (p Publisher) Valid() bool {
-	return len(p) > 0 && len(p) < 256
+	// NOTE: 必須情報ではない
+	return len(p) >= 0 && len(p) < 256
 }
 
 // 開発元
 type Developer string
 
-// 1 ≦ Developer.length ≦ 256
+// 0 ≦ Developer.length ≦ 255
 func (d Developer) Valid() bool {
-	return len(d) > 0 && len(d) < 256
+	// NOTE: 必須情報ではない
+	return len(d) >= 0 && len(d) < 256
 }
 
 // 発売日
 type ReleaseDate time.Time
 
 func NewReleaseDate(date string) (ReleaseDate, error) {
+	// NOTE: 空文字判定のValidationめんどくさいので必須にしたい。
 	dateTime, err := time.Parse("2006-01-02", date)
 	if err != nil {
 		return ReleaseDate{}, err
@@ -73,8 +77,9 @@ func (i LinkID) Valid() bool {
 // サイトタイトル
 type Title string
 
-// 1 ≦ title.length ≦ 256
+// 1 ≦ title.length ≦ 255
 func (t Title) Valid() bool {
+	// NOTE: サイト追加するのであればタイトルは必須にする
 	return len(t) > 0 && len(t) < 256
 }
 
@@ -98,7 +103,8 @@ type LinkDescription string
 
 // 0 ≦ description.length ≦ 2049
 func (d LinkDescription) Valid() bool {
-	return len(d) >= 0 && len(d) <= 2049
+	// NOTE: 必須情報ではない
+	return len(d) >= 0 && len(d) <= 2048
 }
 
 // リンク
