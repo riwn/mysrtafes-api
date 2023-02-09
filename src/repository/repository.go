@@ -185,8 +185,9 @@ func (r *repository) GameUpdate(*game.Game) (*game.Game, error) {
 	return nil, errors.New("no implements")
 }
 
-func (r *repository) GameDelete(game.ID) error {
-	return errors.New("no implements")
+func (r *repository) GameDelete(id game.ID) error {
+	model := mysrtafes_backend.NewGameMasterFromID(id)
+	return model.Delete(r.DB)
 }
 
 func (r *repository) Close() error {

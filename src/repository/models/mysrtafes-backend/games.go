@@ -80,28 +80,21 @@ func (g *gameMaster) Create(db *gorm.DB) error {
 	// NOTE: 中間テーブルのみ作成するためのOmit
 	result := db.Omit("Tags.*", "Platforms.*").Create(g)
 	if result.Error != nil {
-		return result.Error
+		// FIXME: ここ、ModelのBeforeCreateのエラーが伝播できてない。
+		return errors.NewInternalServerError(
+			errors.Layer_Model,
+			errors.NewInformation(
+				errors.ID_DBCreateError,
+				result.Error.Error(),
+				nil,
+			),
+			"create game_masters error",
+		)
 	}
 	return nil
 }
 
 func (g *gameMaster) Read(db *gorm.DB) error {
-	// 中間テーブルの設定
-	err := stdErrors.Join(
-		db.SetupJoinTable(&gameMaster{}, "Tags", &gameTagLink{}),
-		db.SetupJoinTable(&gameMaster{}, "Platforms", &gamePlatformLink{}),
-	)
-	if err != nil {
-		return errors.NewInternalServerError(
-			errors.Layer_Model,
-			errors.NewInformation(
-				errors.ID_DBReadError,
-				err.Error(),
-				nil,
-			),
-			"read game_masters error",
-		)
-	}
 	result := db.
 		Preload("GameReferenceURLs").
 		Preload("Platforms").
@@ -128,6 +121,22 @@ func (g *gameMaster) Update(db *gorm.DB) error {
 }
 
 func (g *gameMaster) Delete(db *gorm.DB) error {
+	result := db.Select(
+		"GameReferenceURLs",
+		"Platforms",
+		"Tags",
+	).Delete(g)
+	if result.Error != nil {
+		return errors.NewInternalServerError(
+			errors.Layer_Model,
+			errors.NewInformation(
+				errors.ID_DBDeleteError,
+				result.Error.Error(),
+				nil,
+			),
+			"delete game_masters error",
+		)
+	}
 	return nil
 }
 
