@@ -3,21 +3,41 @@ package game
 import (
 	"encoding/json"
 	"mysrtafes-backend/pkg/game"
+	"mysrtafes-backend/pkg/game/platform"
+	"mysrtafes-backend/pkg/game/tag"
 	"net/http"
 	"time"
 )
 
 type GameResponse struct {
-	ID          game.ID          `json:"id"`
-	Name        game.Name        `json:"name"`
-	Description game.Description `json:"description"`
-	Publisher   game.Publisher   `json:"publisher"`
-	Developer   game.Developer   `json:"developer"`
-	Links       []LinkResponse   `json:"links"`
-	CreatedAt   time.Time        `json:"created_at"`
-	UpdatedAt   time.Time        `json:"updated_at"`
+	ID          game.ID            `json:"id"`
+	Name        game.Name          `json:"name"`
+	Description game.Description   `json:"description"`
+	Publisher   game.Publisher     `json:"publisher"`
+	Developer   game.Developer     `json:"developer"`
+	Links       []LinkResponse     `json:"links"`
+	Tags        []TagResponse      `json:"tags"`
+	Platforms   []PlatformResponse `json:"platforms"`
+	CreatedAt   time.Time          `json:"created_at"`
+	UpdatedAt   time.Time          `json:"updated_at"`
 	// TODO: LaravelでなぜかReleaseDateを追加するの忘れてた。
 	// ReleaseDate string           `json:"release_date"`
+}
+
+type PlatformResponse struct {
+	ID          platform.ID          `json:"id"`
+	Name        platform.Name        `json:"name"`
+	Description platform.Description `json:"description"`
+	CreatedAt   time.Time            `json:"created_at"`
+	UpdatedAt   time.Time            `json:"updated_at"`
+}
+
+type TagResponse struct {
+	ID          tag.ID          `json:"id"`
+	Name        tag.Name        `json:"name"`
+	Description tag.Description `json:"description"`
+	CreatedAt   time.Time       `json:"created_at"`
+	UpdatedAt   time.Time       `json:"updated_at"`
 }
 
 type LinkResponse struct {
@@ -70,8 +90,30 @@ func writeGame(w http.ResponseWriter, statusCode int, msg string, game *game.Gam
 			CreatedAt:   link.CreatedAt,
 			UpdatedAt:   link.UpdatedAt,
 		})
-
 	}
+
+	tags := make([]TagResponse, 0, len(game.Tags))
+	for _, tag := range game.Tags {
+		tags = append(tags, TagResponse{
+			ID:          tag.ID,
+			Name:        tag.Name,
+			Description: tag.Description,
+			CreatedAt:   tag.CreatedAt,
+			UpdatedAt:   tag.UpdatedAt,
+		})
+	}
+
+	platforms := make([]PlatformResponse, 0, len(game.Platforms))
+	for _, platform := range game.Platforms {
+		platforms = append(platforms, PlatformResponse{
+			ID:          platform.ID,
+			Name:        platform.Name,
+			Description: platform.Description,
+			CreatedAt:   platform.CreatedAt,
+			UpdatedAt:   platform.UpdatedAt,
+		})
+	}
+
 	body := struct {
 		Code    int          `json:"code"`
 		Message string       `json:"message"`
@@ -86,6 +128,8 @@ func writeGame(w http.ResponseWriter, statusCode int, msg string, game *game.Gam
 			Publisher:   game.Publisher,
 			Developer:   game.Developer,
 			Links:       links,
+			Tags:        tags,
+			Platforms:   platforms,
 			CreatedAt:   game.CreatedAt,
 			UpdatedAt:   game.UpdatedAt,
 			// ReleaseDate: game.ReleaseDate.String(),
@@ -100,6 +144,37 @@ func writeGames(w http.ResponseWriter, statusCode int, msg string, games []*game
 	responses := make([]GameResponse, 0, len(games))
 	var lastID game.ID
 	for _, game := range games {
+		links := make([]LinkResponse, 0, len(game.Links))
+		for _, link := range game.Links {
+			links = append(links, LinkResponse{
+				URL:         link.URL.URL().String(),
+				Description: link.LinkDescription,
+				CreatedAt:   link.CreatedAt,
+				UpdatedAt:   link.UpdatedAt,
+			})
+		}
+
+		tags := make([]TagResponse, 0, len(game.Tags))
+		for _, tag := range game.Tags {
+			tags = append(tags, TagResponse{
+				ID:          tag.ID,
+				Name:        tag.Name,
+				Description: tag.Description,
+				CreatedAt:   tag.CreatedAt,
+				UpdatedAt:   tag.UpdatedAt,
+			})
+		}
+
+		platforms := make([]PlatformResponse, 0, len(game.Platforms))
+		for _, platform := range game.Platforms {
+			platforms = append(platforms, PlatformResponse{
+				ID:          platform.ID,
+				Name:        platform.Name,
+				Description: platform.Description,
+				CreatedAt:   platform.CreatedAt,
+				UpdatedAt:   platform.UpdatedAt,
+			})
+		}
 		responses = append(
 			responses,
 			GameResponse{
@@ -108,6 +183,9 @@ func writeGames(w http.ResponseWriter, statusCode int, msg string, games []*game
 				Description: game.Description,
 				Publisher:   game.Publisher,
 				Developer:   game.Developer,
+				Links:       links,
+				Tags:        tags,
+				Platforms:   platforms,
 				CreatedAt:   game.CreatedAt,
 				UpdatedAt:   game.UpdatedAt,
 				// ReleaseDate: game.ReleaseDate.String(),

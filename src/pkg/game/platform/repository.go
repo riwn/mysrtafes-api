@@ -30,7 +30,7 @@ func (s *server) Create(p *Platform) (*Platform, error) {
 	// 名前のValidate
 	if !p.Name.Valid() {
 		return nil, errors.NewInvalidRequest(
-			errors.Layer_Request,
+			errors.Layer_Domain,
 			errors.NewInformation(
 				errors.ID_InvalidParams,
 				"",
@@ -44,7 +44,7 @@ func (s *server) Create(p *Platform) (*Platform, error) {
 	// DescriptionのValidate
 	if !p.Description.Valid() {
 		return nil, errors.NewInvalidRequest(
-			errors.Layer_Request,
+			errors.Layer_Domain,
 			errors.NewInformation(
 				errors.ID_InvalidParams,
 				"",
@@ -62,7 +62,7 @@ func (s *server) Read(id ID) (*Platform, error) {
 	// IDのValidate
 	if !id.Valid() {
 		return nil, errors.NewInvalidRequest(
-			errors.Layer_Request,
+			errors.Layer_Domain,
 			errors.NewInformation(
 				errors.ID_InvalidParams,
 				"",
@@ -84,7 +84,7 @@ func (s *server) Update(p *Platform) (*Platform, error) {
 	// IDのValidate
 	if !p.ID.Valid() {
 		return nil, errors.NewInvalidRequest(
-			errors.Layer_Request,
+			errors.Layer_Domain,
 			errors.NewInformation(
 				errors.ID_InvalidParams,
 				"",
@@ -98,7 +98,7 @@ func (s *server) Update(p *Platform) (*Platform, error) {
 	// 名前のValidate
 	if !p.Name.Valid() {
 		return nil, errors.NewInvalidRequest(
-			errors.Layer_Request,
+			errors.Layer_Domain,
 			errors.NewInformation(
 				errors.ID_InvalidParams,
 				"",
@@ -112,7 +112,7 @@ func (s *server) Update(p *Platform) (*Platform, error) {
 	// DescriptionのValidate
 	if !p.Description.Valid() {
 		return nil, errors.NewInvalidRequest(
-			errors.Layer_Request,
+			errors.Layer_Domain,
 			errors.NewInformation(
 				errors.ID_InvalidParams,
 				"",
@@ -129,7 +129,7 @@ func (s *server) Update(p *Platform) (*Platform, error) {
 func (s *server) Delete(id ID) error {
 	if !id.Valid() {
 		return errors.NewInvalidRequest(
-			errors.Layer_Request,
+			errors.Layer_Domain,
 			errors.NewInformation(
 				errors.ID_InvalidParams,
 				"",

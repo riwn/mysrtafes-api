@@ -4,9 +4,12 @@ import (
 	stdErrors "errors"
 	"mysrtafes-backend/pkg/errors"
 	"mysrtafes-backend/pkg/game"
+	"mysrtafes-backend/pkg/game/platform"
+	"mysrtafes-backend/pkg/game/tag"
 	"time"
 
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type GameMaster interface {
@@ -83,6 +86,40 @@ func (g *gameMaster) Create(db *gorm.DB) error {
 }
 
 func (g *gameMaster) Read(db *gorm.DB) error {
+	// 中間テーブルの設定
+	err := stdErrors.Join(
+		db.SetupJoinTable(&gameMaster{}, "Tags", &gameTagLink{}),
+		db.SetupJoinTable(&gameMaster{}, "Platforms", &gamePlatformLink{}),
+	)
+	if err != nil {
+		return errors.NewInternalServerError(
+			errors.Layer_Model,
+			errors.NewInformation(
+				errors.ID_DBReadError,
+				err.Error(),
+				nil,
+			),
+			"read game_masters error",
+		)
+	}
+	result := db.
+		Preload("GameReferenceURLs").
+		Preload("Platforms").
+		Preload("Tags").
+		Where("id = ?", g.ID).
+		Find(&g)
+
+	if result.Error != nil {
+		return errors.NewInternalServerError(
+			errors.Layer_Model,
+			errors.NewInformation(
+				errors.ID_DBReadError,
+				result.Error.Error(),
+				nil,
+			),
+			"read game_masters error",
+		)
+	}
 	return nil
 }
 
@@ -104,6 +141,16 @@ func (g *gameMaster) NewEntity() (*game.Game, error) {
 		links = append(links, link)
 	}
 
+	tags := make([]*tag.Tag, 0, len(g.Tags))
+	for _, rawTag := range g.Tags {
+		tags = append(tags, rawTag.NewEntity())
+	}
+
+	platforms := make([]*platform.Platform, 0, len(g.Platforms))
+	for _, rawPlatform := range g.Platforms {
+		platforms = append(platforms, rawPlatform.NewEntity())
+	}
+
 	// TODO: Createの時もここでTagとPlatformsをできれば入れるようにする実装を追加
 	return &game.Game{
 		ID:          g.ID,
@@ -112,7 +159,53 @@ func (g *gameMaster) NewEntity() (*game.Game, error) {
 		Publisher:   g.Publisher,
 		Developer:   g.Developer,
 		Links:       links,
+		Tags:        tags,
+		Platforms:   platforms,
 		CreatedAt:   g.CreatedAt,
 		UpdatedAt:   g.UpdatedAt,
 	}, nil
+}
+
+type gameMasters []*gameMaster
+
+func NewGameMasters() gameMasters {
+	return []*gameMaster{}
+}
+
+func (g *gameMasters) Find(db *gorm.DB, findOption *game.FindOption) error {
+	// 検索モードで調整
+	switch findOption.SearchMode {
+	case game.SearchMode_Pagination:
+		db = db.Limit(findOption.Pagination.Limit).Offset(findOption.Pagination.Offset)
+	case game.SearchMode_Seek:
+		db = db.Where("id > ?", findOption.Seek.LastID).Limit(findOption.Seek.Count)
+	}
+
+	switch findOption.OrderOption.Order {
+	case game.Order_Name:
+		db.Order(
+			clause.OrderByColumn{
+				Column: clause.Column{Name: "name"},
+				Desc:   findOption.OrderOption.Desc,
+			},
+		)
+	}
+
+	result := db.
+		Preload("GameReferenceURLs").
+		Preload("Platforms").
+		Preload("Tags").
+		Find(&g)
+	if result.Error != nil {
+		return errors.NewInternalServerError(
+			errors.Layer_Model,
+			errors.NewInformation(
+				errors.ID_DBReadError,
+				result.Error.Error(),
+				nil,
+			),
+			"find game_masters error",
+		)
+	}
+	return nil
 }

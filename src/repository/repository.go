@@ -155,12 +155,30 @@ func (r *repository) GameCreate(game *game.Game, platformIDs []platform.ID, tagI
 	return model.NewEntity()
 }
 
-func (r *repository) GameRead(game.ID) (*game.Game, error) {
-	return nil, errors.New("no implements")
+func (r *repository) GameRead(gameID game.ID) (*game.Game, error) {
+	model := mysrtafes_backend.NewGameMasterFromID(gameID)
+	err := model.Read(r.DB)
+	if err != nil {
+		return nil, err
+	}
+	return model.NewEntity()
 }
 
-func (r *repository) GameFind(*game.FindOption) ([]*game.Game, error) {
-	return nil, errors.New("no implements")
+func (r *repository) GameFind(f *game.FindOption) ([]*game.Game, error) {
+	models := mysrtafes_backend.NewGameMasters()
+	err := models.Find(r.DB, f)
+	if err != nil {
+		return nil, err
+	}
+	entities := make([]*game.Game, 0, len(models))
+	for _, model := range models {
+		game, err := model.NewEntity()
+		if err != nil {
+			return nil, err
+		}
+		entities = append(entities, game)
+	}
+	return entities, nil
 }
 
 func (r *repository) GameUpdate(*game.Game) (*game.Game, error) {
