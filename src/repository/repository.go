@@ -181,8 +181,21 @@ func (r *repository) GameFind(f *game.FindOption) ([]*game.Game, error) {
 	return entities, nil
 }
 
-func (r *repository) GameUpdate(*game.Game) (*game.Game, error) {
-	return nil, errors.New("no implements")
+func (r *repository) GameUpdate(game *game.Game, platformIDs []platform.ID, tagIDs []tag.ID) (*game.Game, error) {
+	tags := mysrtafes_backend.NewTagMasterListFromIDs(tagIDs)
+	platforms := mysrtafes_backend.NewPlatformListFromIDs(platformIDs)
+	model := mysrtafes_backend.NewGameMaster(game, platforms, tags)
+	err := r.DB.Transaction(func(tx *gorm.DB) error {
+		err := model.Update(tx)
+		if err != nil {
+			return err
+		}
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	return model.NewEntity()
 }
 
 func (r *repository) GameDelete(id game.ID) error {

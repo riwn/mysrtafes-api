@@ -10,7 +10,7 @@ type Repository interface {
 	GameCreate(*Game, []platform.ID, []tag.ID) (*Game, error)
 	GameRead(ID) (*Game, error)
 	GameFind(*FindOption) ([]*Game, error)
-	GameUpdate(*Game) (*Game, error)
+	GameUpdate(*Game, []platform.ID, []tag.ID) (*Game, error)
 	GameDelete(ID) error
 }
 
@@ -249,7 +249,7 @@ func (s *server) Update(g *Game, platformIDs []platform.ID, tagIDs []tag.ID) (*G
 			)
 		}
 	}
-	return s.repository.GameUpdate(g)
+	return s.repository.GameUpdate(g, platformIDs, tagIDs)
 }
 
 func (s *server) Delete(id ID) error {

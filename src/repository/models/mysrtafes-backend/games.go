@@ -40,6 +40,7 @@ func NewGameMaster(game *game.Game, platforms []*platformMaster, tags []*tagMast
 		links = append(links, NewGameReferenceURLs(link))
 	}
 	return &gameMaster{
+		ID:                game.ID,
 		Name:              game.Name,
 		Description:       game.Description,
 		Publisher:         game.Publisher,
@@ -61,21 +62,8 @@ func (gameMaster) TableName() string {
 }
 
 func (g *gameMaster) Create(db *gorm.DB) error {
-	// 中間テーブルの設定
-	err := stdErrors.Join(
-		db.SetupJoinTable(&gameMaster{}, "Tags", &gameTagLink{}),
-		db.SetupJoinTable(&gameMaster{}, "Platforms", &gamePlatformLink{}),
-	)
-	if err != nil {
-		return errors.NewInternalServerError(
-			errors.Layer_Model,
-			errors.NewInformation(
-				errors.ID_DBCreateError,
-				err.Error(),
-				nil,
-			),
-			"create game_masters error",
-		)
+	if err := g.joinTable(db); err != nil {
+		return err
 	}
 	// NOTE: 中間テーブルのみ作成するためのOmit
 	result := db.Omit("Tags.*", "Platforms.*").Create(g)
@@ -117,6 +105,34 @@ func (g *gameMaster) Read(db *gorm.DB) error {
 }
 
 func (g *gameMaster) Update(db *gorm.DB) error {
+	err := stdErrors.Join(
+		db.Model(&g).Association("Tags").Replace(g.Tags),
+		db.Model(&g).Association("Platforms").Replace(g.Platforms),
+		db.Model(&g).Association("GameReferenceURLs").Delete(g.GameReferenceURLs),
+	)
+	if err != nil {
+		return errors.NewInternalServerError(
+			errors.Layer_Model,
+			errors.NewInformation(
+				errors.ID_DBUpdateError,
+				err.Error(),
+				nil,
+			),
+			"update game_masters error",
+		)
+	}
+	result := db.Omit("Tags", "Platforms").Updates(g)
+	if result.Error != nil {
+		return errors.NewInternalServerError(
+			errors.Layer_Model,
+			errors.NewInformation(
+				errors.ID_DBUpdateError,
+				result.Error.Error(),
+				nil,
+			),
+			"update game_masters error",
+		)
+	}
 	return nil
 }
 
@@ -135,6 +151,26 @@ func (g *gameMaster) Delete(db *gorm.DB) error {
 				nil,
 			),
 			"delete game_masters error",
+		)
+	}
+	return nil
+}
+
+func (*gameMaster) joinTable(db *gorm.DB) error {
+	// 中間テーブルの設定
+	err := stdErrors.Join(
+		db.SetupJoinTable(&gameMaster{}, "Tags", &gameTagLink{}),
+		db.SetupJoinTable(&gameMaster{}, "Platforms", &gamePlatformLink{}),
+	)
+	if err != nil {
+		return errors.NewInternalServerError(
+			errors.Layer_Model,
+			errors.NewInformation(
+				errors.ID_DBTableJoinError,
+				err.Error(),
+				nil,
+			),
+			"set many to many table error",
 		)
 	}
 	return nil
@@ -192,7 +228,7 @@ func (g *gameMasters) Find(db *gorm.DB, findOption *game.FindOption) error {
 
 	switch findOption.OrderOption.Order {
 	case game.Order_Name:
-		db.Order(
+		db = db.Order(
 			clause.OrderByColumn{
 				Column: clause.Column{Name: "name"},
 				Desc:   findOption.OrderOption.Desc,
