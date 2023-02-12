@@ -3,9 +3,10 @@ package game
 import (
 	"math/rand"
 	"net/url"
-	"reflect"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestID_Valid(t *testing.T) {
@@ -27,9 +28,7 @@ func TestID_Valid(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.i.Valid(); got != tt.want {
-				t.Errorf("ID.Valid() = %v, want %v", got, tt.want)
-			}
+			assert.Equal(t, tt.want, tt.i.Valid())
 		})
 	}
 }
@@ -79,9 +78,7 @@ func TestName_Valid(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.n.Valid(); got != tt.want {
-				t.Errorf("Name.Valid() = %v, want %v", got, tt.want)
-			}
+			assert.Equal(t, tt.want, tt.n.Valid())
 		})
 	}
 }
@@ -131,9 +128,7 @@ func TestDescription_Valid(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.d.Valid(); got != tt.want {
-				t.Errorf("Description.Valid() = %v, want %v", got, tt.want)
-			}
+			assert.Equal(t, tt.want, tt.d.Valid())
 		})
 	}
 }
@@ -183,9 +178,7 @@ func TestPublisher_Valid(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.p.Valid(); got != tt.want {
-				t.Errorf("Publisher.Valid() = %v, want %v", got, tt.want)
-			}
+			assert.Equal(t, tt.want, tt.p.Valid())
 		})
 	}
 }
@@ -235,9 +228,7 @@ func TestDeveloper_Valid(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.d.Valid(); got != tt.want {
-				t.Errorf("Developer.Valid() = %v, want %v", got, tt.want)
-			}
+			assert.Equal(t, tt.want, tt.d.Valid())
 		})
 	}
 }
@@ -285,9 +276,29 @@ func Test発売日の生成(t *testing.T) {
 				t.Errorf("NewReleaseDate() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewReleaseDate() = %v, want %v", got, tt.want)
-			}
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
+func TestReleaseDate_String(t *testing.T) {
+	tests := []struct {
+		name string
+		r    ReleaseDate
+		want string
+	}{
+		{
+			name: "OK",
+			r: func() ReleaseDate {
+				date := time.Date(2000, 9, 27, 0, 0, 0, 0, time.UTC)
+				return ReleaseDate(date)
+			}(),
+			want: "2000-09-27",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.want, tt.r.String())
 		})
 	}
 }
@@ -312,9 +323,7 @@ func Test発売日から時間への型変換(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.r.Time(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("ReleaseDate.Time() = %v, want %v", got, tt.want)
-			}
+			assert.Equal(t, tt.want, tt.r.Time())
 		})
 	}
 }
@@ -338,9 +347,7 @@ func TestLinkID_Valid(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.i.Valid(); got != tt.want {
-				t.Errorf("LinkID.Valid() = %v, want %v", got, tt.want)
-			}
+			assert.Equal(t, tt.want, tt.i.Valid())
 		})
 	}
 }
@@ -390,9 +397,7 @@ func TestTitle_Valid(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.tr.Valid(); got != tt.want {
-				t.Errorf("Title.Valid() = %v, want %v", got, tt.want)
-			}
+			assert.Equal(t, tt.want, tt.tr.Valid())
 		})
 	}
 }
@@ -440,9 +445,7 @@ func TestNewURL(t *testing.T) {
 				t.Errorf("NewURL() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewURL() = %v, want %v", got, tt.want)
-			}
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
@@ -451,7 +454,7 @@ func TestURL_URL(t *testing.T) {
 	tests := []struct {
 		name string
 		u    URL
-		want url.URL
+		want *url.URL
 	}{
 		{
 			name: "OK",
@@ -459,17 +462,15 @@ func TestURL_URL(t *testing.T) {
 				u, _ := NewURL("https://example.com")
 				return u
 			}(),
-			want: func() url.URL {
+			want: func() *url.URL {
 				u, _ := url.ParseRequestURI("https://example.com")
-				return *u
+				return u
 			}(),
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.u.URL(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("URL.URL() = %v, want %v", got, tt.want)
-			}
+			assert.Equal(t, tt.want, tt.u.URL())
 		})
 	}
 }
@@ -519,9 +520,7 @@ func TestLinkDescription_Valid(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.d.Valid(); got != tt.want {
-				t.Errorf("LinkDescription.Valid() = %v, want %v", got, tt.want)
-			}
+			assert.Equal(t, tt.want, tt.d.Valid())
 		})
 	}
 }
@@ -560,9 +559,8 @@ func TestNewLink(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := NewLink(tt.args.title, tt.args.url, tt.args.description); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewLink() = %v, want %v", got, tt.want)
-			}
+			got := NewLink(tt.args.title, tt.args.url, tt.args.description)
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
@@ -604,9 +602,8 @@ func TestNewLinkWithID(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := NewLinkWithID(tt.args.id, tt.args.title, tt.args.url, tt.args.description); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewLinkWithID() = %v, want %v", got, tt.want)
-			}
+			got := NewLinkWithID(tt.args.id, tt.args.title, tt.args.url, tt.args.description)
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
