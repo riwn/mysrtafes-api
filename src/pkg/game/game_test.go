@@ -607,3 +607,90 @@ func TestNewLinkWithID(t *testing.T) {
 		})
 	}
 }
+
+func TestNew(t *testing.T) {
+	type args struct {
+		name        Name
+		description Description
+		publisher   Publisher
+		developer   Developer
+		releaseDate ReleaseDate
+		links       []*Link
+	}
+	tests := []struct {
+		name string
+		args args
+		want *Game
+	}{
+		{
+			name: "ok",
+			args: args{
+				name:        "test",
+				description: "test",
+				publisher:   "中",
+				developer:   "Nintendo",
+				releaseDate: ReleaseDate(time.Date(2000, 9, 27, 0, 0, 0, 0, time.UTC)),
+				links:       []*Link{},
+			},
+			want: &Game{
+				Name:        "test",
+				Description: "test",
+				Publisher:   "中",
+				Developer:   "Nintendo",
+				ReleaseDate: ReleaseDate(time.Date(2000, 9, 27, 0, 0, 0, 0, time.UTC)),
+				Links:       []*Link{},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := New(tt.args.name, tt.args.description, tt.args.publisher, tt.args.developer, tt.args.releaseDate, tt.args.links)
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
+func TestNewWithID(t *testing.T) {
+	type args struct {
+		id          ID
+		name        Name
+		description Description
+		publisher   Publisher
+		developer   Developer
+		releaseDate ReleaseDate
+		links       []*Link
+	}
+	tests := []struct {
+		name string
+		args args
+		want *Game
+	}{
+		{
+			name: "ok",
+			args: args{
+				id:          82,
+				name:        "test",
+				description: "test",
+				publisher:   "中",
+				developer:   "Nintendo",
+				releaseDate: ReleaseDate(time.Date(2000, 9, 27, 0, 0, 0, 0, time.UTC)),
+				links:       []*Link{},
+			},
+			want: &Game{
+				ID:          82,
+				Name:        "test",
+				Description: "test",
+				Publisher:   "中",
+				Developer:   "Nintendo",
+				ReleaseDate: ReleaseDate(time.Date(2000, 9, 27, 0, 0, 0, 0, time.UTC)),
+				Links:       []*Link{},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := NewWithID(tt.args.id, tt.args.name, tt.args.description, tt.args.publisher, tt.args.developer, tt.args.releaseDate, tt.args.links)
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
