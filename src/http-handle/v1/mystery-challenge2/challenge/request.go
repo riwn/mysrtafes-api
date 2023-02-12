@@ -74,7 +74,7 @@ func NewChallengeCreate(r *http.Request) (*challenge.Challenge, error) {
 					errors.NewInvalidParams("url", body.Challenge.URL),
 				},
 			),
-			"json decode error. bad format request",
+			"url create error",
 		)
 	}
 

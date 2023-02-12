@@ -179,7 +179,7 @@ func (r *internalServerError) Information() *Information {
 }
 
 func (r *internalServerError) Error() string {
-	return fmt.Sprintf("%s: UNSUPPORTED_MEDIA_TYPE: %s", r.layer, r.msg)
+	return fmt.Sprintf("%s: INTERNAL_SERVER_ERROR: %s", r.layer, r.msg)
 }
 
 func (r *internalServerError) ErrorInternalServerErrorError() {}

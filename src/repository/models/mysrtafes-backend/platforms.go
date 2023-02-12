@@ -39,6 +39,16 @@ func NewPlatformMasterFromID(platformID platform.ID) PlatformMaster {
 	}
 }
 
+func NewPlatformListFromIDs(platformIDs []platform.ID) []*platformMaster {
+	platforms := make([]*platformMaster, 0, len(platformIDs))
+	for _, platformID := range platformIDs {
+		platforms = append(platforms, &platformMaster{
+			ID: platformID,
+		})
+	}
+	return platforms
+}
+
 func (platformMaster) TableName() string {
 	return "platform_masters"
 }
@@ -76,7 +86,7 @@ func (t *platformMaster) Read(db *gorm.DB) error {
 }
 
 func (t *platformMaster) Update(db *gorm.DB) error {
-	// TODO: 更新の時だけCreatedAtがなぜか入ってこない問題があるっぽい。
+	// TODO: 更新の時だけCreatedAtが入ってこない問題があるっぽい。
 	result := db.Updates(t)
 	if result.Error != nil {
 		return errors.NewInternalServerError(

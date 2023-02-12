@@ -1,8 +1,10 @@
-package tag
+package game
 
 import (
 	"encoding/json"
 	"mysrtafes-backend/pkg/errors"
+	"mysrtafes-backend/pkg/game"
+	"mysrtafes-backend/pkg/game/platform"
 	"mysrtafes-backend/pkg/game/tag"
 	"net/http"
 	"net/url"
@@ -11,17 +13,28 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-// Post: NewTagEntity for request
-func NewTagCreate(r *http.Request) (*tag.Tag, error) {
+func NewGameCreate(r *http.Request) (*game.Game, []platform.ID, []tag.ID, error) {
 	defer r.Body.Close()
 
+	type Link struct {
+		Title           game.Title           `json:"title"`
+		URL             string               `json:"url"`
+		LinkDescription game.LinkDescription `json:"description"`
+	}
+
 	body := struct {
-		Name        tag.Name        `json:"name"`
-		Description tag.Description `json:"description"`
+		Name        game.Name        `json:"name"`
+		Description game.Description `json:"description"`
+		Publisher   game.Publisher   `json:"publisher"`
+		Developer   game.Developer   `json:"developer"`
+		ReleaseDate string           `json:"release_date"`
+		Links       []Link           `json:"links"`
+		PlatformIDs []platform.ID    `json:"platform_ids"`
+		TagIDs      []tag.ID         `json:"tag_ids"`
 	}{}
 	err := json.NewDecoder(r.Body).Decode(&body)
 	if err != nil {
-		return nil, errors.NewInvalidRequest(
+		return nil, nil, nil, errors.NewInvalidRequest(
 			errors.Layer_Request,
 			errors.NewInformation(
 				errors.ID_JsonDecodeError,
@@ -32,17 +45,54 @@ func NewTagCreate(r *http.Request) (*tag.Tag, error) {
 		)
 	}
 
-	return tag.New(
+	releaseDate, err := game.NewReleaseDate(body.ReleaseDate)
+	if err != nil {
+		return nil, nil, nil, errors.NewInvalidRequest(
+			errors.Layer_Request,
+			errors.NewInformation(
+				errors.ID_InvalidParams,
+				err.Error(),
+				[]errors.InvalidParams{
+					errors.NewInvalidParams("release_date", body.ReleaseDate),
+				},
+			),
+			"release_date create error",
+		)
+	}
+
+	Links := make([]*game.Link, 0, len(body.Links))
+	for _, link := range body.Links {
+		url, err := game.NewURL(link.URL)
+		if err != nil {
+			return nil, nil, nil, errors.NewInvalidRequest(
+				errors.Layer_Request,
+				errors.NewInformation(
+					errors.ID_InvalidParams,
+					err.Error(),
+					[]errors.InvalidParams{
+						errors.NewInvalidParams("links.url", link.URL),
+					},
+				),
+				"links.url create error",
+			)
+		}
+		Links = append(Links, game.NewLink(link.Title, url, link.LinkDescription))
+	}
+
+	return game.New(
 		body.Name,
 		body.Description,
-	), nil
+		body.Publisher,
+		body.Developer,
+		releaseDate,
+		Links,
+	), body.PlatformIDs, body.TagIDs, nil
 }
 
-// Delete: NewTagID for request
-func NewTagID(r *http.Request) (tag.ID, error) {
-	tagIDStr := chi.URLParam(r, "tagID")
+func NewGameID(r *http.Request) (game.ID, error) {
+	gameIDStr := chi.URLParam(r, "gameID")
 
-	tagID, err := strconv.Atoi(tagIDStr)
+	gameID, err := strconv.Atoi(gameIDStr)
 	if err != nil {
 		return 0, errors.NewInvalidRequest(
 			errors.Layer_Request,
@@ -50,19 +100,18 @@ func NewTagID(r *http.Request) (tag.ID, error) {
 				errors.ID_InvalidParams,
 				err.Error(),
 				[]errors.InvalidParams{
-					errors.NewInvalidParams("tagID", tagIDStr),
+					errors.NewInvalidParams("gameID", gameIDStr),
 				},
 			),
-			"tagID convert error",
+			"gameID convert error",
 		)
 	}
-	return tag.ID(tagID), nil
+	return game.ID(gameID), nil
 }
 
-// Find: FindOptionEntity for request
-func NewTagFindOption(r *http.Request) (*tag.FindOption, error) {
+func NewGameFindOption(r *http.Request) (*game.FindOption, error) {
 	// デフォルト値生成
-	findOption := tag.NewFindOption()
+	findOption := game.NewFindOption()
 
 	q := r.URL.Query()
 	// 検索設定
@@ -78,22 +127,33 @@ func NewTagFindOption(r *http.Request) (*tag.FindOption, error) {
 	return findOption, nil
 }
 
-// Update: NewTagEntity for request
-func NewTagUpdate(r *http.Request) (*tag.Tag, error) {
+func NewGameUpdate(r *http.Request) (*game.Game, []platform.ID, []tag.ID, error) {
 	defer r.Body.Close()
 
-	tagID, err := NewTagID(r)
+	gameID, err := NewGameID(r)
 	if err != nil {
-		return nil, err
+		return nil, nil, nil, err
+	}
+
+	type Link struct {
+		Title           game.Title           `json:"title"`
+		URL             string               `json:"url"`
+		LinkDescription game.LinkDescription `json:"description"`
 	}
 
 	body := struct {
-		Name        tag.Name        `json:"name"`
-		Description tag.Description `json:"description"`
+		Name        game.Name        `json:"name"`
+		Description game.Description `json:"description"`
+		Publisher   game.Publisher   `json:"publisher"`
+		Developer   game.Developer   `json:"developer"`
+		ReleaseDate string           `json:"release_date"`
+		Links       []Link           `json:"links"`
+		PlatformIDs []platform.ID    `json:"platform_ids"`
+		TagIDs      []tag.ID         `json:"tag_ids"`
 	}{}
 	err = json.NewDecoder(r.Body).Decode(&body)
 	if err != nil {
-		return nil, errors.NewInvalidRequest(
+		return nil, nil, nil, errors.NewInvalidRequest(
 			errors.Layer_Request,
 			errors.NewInformation(
 				errors.ID_JsonDecodeError,
@@ -104,17 +164,55 @@ func NewTagUpdate(r *http.Request) (*tag.Tag, error) {
 		)
 	}
 
-	return tag.NewWithID(
-		tagID,
+	releaseDate, err := game.NewReleaseDate(body.ReleaseDate)
+	if err != nil {
+		return nil, nil, nil, errors.NewInvalidRequest(
+			errors.Layer_Request,
+			errors.NewInformation(
+				errors.ID_InvalidParams,
+				err.Error(),
+				[]errors.InvalidParams{
+					errors.NewInvalidParams("release_date", body.ReleaseDate),
+				},
+			),
+			"release_date create error",
+		)
+	}
+
+	Links := make([]*game.Link, 0, len(body.Links))
+	for _, link := range body.Links {
+		url, err := game.NewURL(link.URL)
+		if err != nil {
+			return nil, nil, nil, errors.NewInvalidRequest(
+				errors.Layer_Request,
+				errors.NewInformation(
+					errors.ID_InvalidParams,
+					err.Error(),
+					[]errors.InvalidParams{
+						errors.NewInvalidParams("links.url", link.URL),
+					},
+				),
+				"links.url create error",
+			)
+		}
+		Links = append(Links, game.NewLink(link.Title, url, link.LinkDescription))
+	}
+
+	return game.NewWithID(
+		gameID,
 		body.Name,
 		body.Description,
-	), nil
+		body.Publisher,
+		body.Developer,
+		releaseDate,
+		Links,
+	), body.PlatformIDs, body.TagIDs, nil
 }
 
 // Find: set order param
-func setOrder(findOption *tag.FindOption, q url.Values) error {
+func setOrder(findOption *game.FindOption, q url.Values) error {
 	// シーク法のときは並び替えするとおかしくなるので禁止
-	if findOption.SearchMode == tag.SearchMode_Seek {
+	if findOption.SearchMode == game.SearchMode_Seek {
 		return nil
 	}
 	// Descのチェック
@@ -139,16 +237,16 @@ func setOrder(findOption *tag.FindOption, q url.Values) error {
 
 	// 並び順がないときはIDのOrderで返却
 	if !q.Has("order") {
-		findOption.SetOrder(tag.Order_ID, desc)
+		findOption.SetOrder(game.Order_ID, desc)
 		return nil
 	}
 
 	// 並び順のチェック
 	switch q.Get("order") {
 	case "name":
-		findOption.SetOrder(tag.Order_Name, desc)
+		findOption.SetOrder(game.Order_Name, desc)
 	case "id":
-		findOption.SetOrder(tag.Order_ID, desc)
+		findOption.SetOrder(game.Order_ID, desc)
 	default:
 		return errors.NewInvalidRequest(
 			errors.Layer_Request,
@@ -166,7 +264,7 @@ func setOrder(findOption *tag.FindOption, q url.Values) error {
 }
 
 // Find: set search mode param
-func setSearchMode(findOption *tag.FindOption, q url.Values) error {
+func setSearchMode(findOption *game.FindOption, q url.Values) error {
 	// モードがないときは何もせず終了
 	if !q.Has("mode") {
 		return nil
@@ -211,7 +309,7 @@ func setSearchMode(findOption *tag.FindOption, q url.Values) error {
 				)
 			}
 		}
-		findOption.SetSeek(tag.LastID(lastID), tag.Count(count))
+		findOption.SetSeek(game.LastID(lastID), game.Count(count))
 	case "page":
 		// ページネーション法
 		var limit, offset int = 30, 0
@@ -250,7 +348,7 @@ func setSearchMode(findOption *tag.FindOption, q url.Values) error {
 				)
 			}
 		}
-		findOption.SetPagination(tag.Limit(limit), tag.Offset(offset))
+		findOption.SetPagination(game.Limit(limit), game.Offset(offset))
 	default:
 		return errors.NewInvalidRequest(
 			errors.Layer_Request,

@@ -31,7 +31,7 @@ func (s *server) Create(t *Tag) (*Tag, error) {
 	// 名前のValidate
 	if !t.Name.Valid() {
 		return nil, errors.NewInvalidRequest(
-			errors.Layer_Request,
+			errors.Layer_Domain,
 			errors.NewInformation(
 				errors.ID_InvalidParams,
 				"",
@@ -45,12 +45,12 @@ func (s *server) Create(t *Tag) (*Tag, error) {
 	// DescriptionのValidate
 	if !t.Description.Valid() {
 		return nil, errors.NewInvalidRequest(
-			errors.Layer_Request,
+			errors.Layer_Domain,
 			errors.NewInformation(
 				errors.ID_InvalidParams,
 				"",
 				[]errors.InvalidParams{
-					errors.NewInvalidParams("description", t.Name),
+					errors.NewInvalidParams("description", t.Description),
 				},
 			),
 			"Description Valid error",
@@ -64,7 +64,7 @@ func (s *server) Read(id ID) (*Tag, error) {
 	// IDのValidate
 	if !id.Valid() {
 		return nil, errors.NewInvalidRequest(
-			errors.Layer_Request,
+			errors.Layer_Domain,
 			errors.NewInformation(
 				errors.ID_InvalidParams,
 				"",
@@ -88,7 +88,7 @@ func (s *server) Update(t *Tag) (*Tag, error) {
 	// IDのValidate
 	if !t.ID.Valid() {
 		return nil, errors.NewInvalidRequest(
-			errors.Layer_Request,
+			errors.Layer_Domain,
 			errors.NewInformation(
 				errors.ID_InvalidParams,
 				"",
@@ -102,7 +102,7 @@ func (s *server) Update(t *Tag) (*Tag, error) {
 	// 名前のValidate
 	if !t.Name.Valid() {
 		return nil, errors.NewInvalidRequest(
-			errors.Layer_Request,
+			errors.Layer_Domain,
 			errors.NewInformation(
 				errors.ID_InvalidParams,
 				"",
@@ -116,7 +116,7 @@ func (s *server) Update(t *Tag) (*Tag, error) {
 	// DescriptionのValidate
 	if !t.Description.Valid() {
 		return nil, errors.NewInvalidRequest(
-			errors.Layer_Request,
+			errors.Layer_Domain,
 			errors.NewInformation(
 				errors.ID_InvalidParams,
 				"",
@@ -134,7 +134,7 @@ func (s *server) Update(t *Tag) (*Tag, error) {
 func (s *server) Delete(id ID) error {
 	if !id.Valid() {
 		return errors.NewInvalidRequest(
-			errors.Layer_Request,
+			errors.Layer_Domain,
 			errors.NewInformation(
 				errors.ID_InvalidParams,
 				"",

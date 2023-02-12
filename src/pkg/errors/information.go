@@ -1,5 +1,6 @@
 package errors
 
+// TODO: エラーの設計微妙。要検討
 // エラー詳細情報
 // DBでエラー出た時とか、decodeでエラー出た時とかのmsgなど、APIユーザーに見せたくない情報をdetailに配置
 type Information struct {

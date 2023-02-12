@@ -30,6 +30,19 @@ func (h *platformHandler) HandlePlatform(w http.ResponseWriter, r *http.Request)
 	}
 }
 
+func (h *platformHandler) HandlePlatformForMultiple(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case http.MethodGet:
+		h.find(w, r)
+	// TODO: 必要であれば複数登録や更新削除を作る
+	// case http.MethodPost:
+	// case http.MethodPut:
+	// case http.MethodDelete:
+	default:
+		http.NotFound(w, r)
+	}
+}
+
 func (h *platformHandler) create(w http.ResponseWriter, r *http.Request) {
 	platform, err := NewPlatformCreate(r)
 	if err != nil {
@@ -57,12 +70,6 @@ func (h *platformHandler) read(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Println(err)
 		errors.WriteError(w, err)
-		return
-	}
-
-	// IDがないときは複数検索にする
-	if !platformID.Valid() {
-		h.find(w, r)
 		return
 	}
 

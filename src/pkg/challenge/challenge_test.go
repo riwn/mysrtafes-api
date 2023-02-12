@@ -386,3 +386,53 @@ func TestComment_Valid(t *testing.T) {
 		})
 	}
 }
+
+func TestNewURL(t *testing.T) {
+	type args struct {
+		us string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    URL
+		wantErr bool
+	}{
+		{
+			name: "OK",
+			args: args{
+				us: "https://example.com",
+			},
+			want: func() URL {
+				u, _ := url.Parse("https://example.com")
+				return URL(*u)
+			}(),
+			wantErr: false,
+		},
+		{
+			name: "空文字",
+			args: args{
+				us: "",
+			},
+			wantErr: true,
+		},
+		{
+			name: "でたらめな文字列",
+			args: args{
+				us: "テスト",
+			},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := NewURL(tt.args.us)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("NewURL() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("NewURL() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

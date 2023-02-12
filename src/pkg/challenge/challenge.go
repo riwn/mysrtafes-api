@@ -50,7 +50,7 @@ type IsStream bool
 type URL url.URL
 
 func NewURL(us string) (URL, error) {
-	u, err := url.Parse(us)
+	u, err := url.ParseRequestURI(us)
 	if err != nil {
 		return URL{}, err
 	}

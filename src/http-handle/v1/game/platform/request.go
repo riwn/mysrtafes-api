@@ -2,7 +2,6 @@ package platform
 
 import (
 	"encoding/json"
-	"log"
 	"mysrtafes-backend/pkg/errors"
 	"mysrtafes-backend/pkg/game/platform"
 	"net/http"
@@ -12,6 +11,7 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
+// Post: NewPlatformEntity for request
 func NewPlatformCreate(r *http.Request) (*platform.Platform, error) {
 	defer r.Body.Close()
 
@@ -38,13 +38,10 @@ func NewPlatformCreate(r *http.Request) (*platform.Platform, error) {
 	), nil
 }
 
+// Delete: NewPlatformID for request
 func NewPlatformID(r *http.Request) (platform.ID, error) {
 	platformIDStr := chi.URLParam(r, "platformID")
-	// 空文字の時、0にして複数検索と判断
-	if platformIDStr == "" {
-		return 0, nil
-	}
-	log.Print(platformIDStr)
+
 	platformID, err := strconv.Atoi(platformIDStr)
 	if err != nil {
 		return 0, errors.NewInvalidRequest(
@@ -62,15 +59,12 @@ func NewPlatformID(r *http.Request) (platform.ID, error) {
 	return platform.ID(platformID), nil
 }
 
+// Find: NewFindOptionEntity for request
 func NewPlatformFindOption(r *http.Request) (*platform.FindOption, error) {
 	// デフォルト値生成
 	findOption := platform.NewFindOption()
-	// NOTE: QueryがNilのときはデフォルトで返却
-	q := r.URL.Query()
-	if q == nil {
-		return findOption, nil
-	}
 
+	q := r.URL.Query()
 	// 検索設定
 	if err := setSearchMode(findOption, q); err != nil {
 		return nil, err
@@ -84,15 +78,20 @@ func NewPlatformFindOption(r *http.Request) (*platform.FindOption, error) {
 	return findOption, nil
 }
 
+// Update: NewPlatformEntity for request
 func NewPlatformUpdate(r *http.Request) (*platform.Platform, error) {
 	defer r.Body.Close()
 
+	platformID, err := NewPlatformID(r)
+	if err != nil {
+		return nil, err
+	}
+
 	body := struct {
-		ID          platform.ID          `json:"id"`
 		Name        platform.Name        `json:"name"`
 		Description platform.Description `json:"description"`
 	}{}
-	err := json.NewDecoder(r.Body).Decode(&body)
+	err = json.NewDecoder(r.Body).Decode(&body)
 	if err != nil {
 		return nil, errors.NewInvalidRequest(
 			errors.Layer_Request,
@@ -106,12 +105,13 @@ func NewPlatformUpdate(r *http.Request) (*platform.Platform, error) {
 	}
 
 	return platform.NewWithID(
-		body.ID,
+		platformID,
 		body.Name,
 		body.Description,
 	), nil
 }
 
+// Find: set order param
 func setOrder(findOption *platform.FindOption, q url.Values) error {
 	// シーク法のときは並び替えするとおかしくなるので禁止
 	if findOption.SearchMode == platform.SearchMode_Seek {
@@ -137,17 +137,40 @@ func setOrder(findOption *platform.FindOption, q url.Values) error {
 		}
 	}
 
+	// 並び順がないときはIDのOrderで返却
+	if !q.Has("order") {
+		findOption.SetOrder(platform.Order_ID, desc)
+		return nil
+	}
+
 	// 並び順のチェック
 	switch q.Get("order") {
 	case "name":
 		findOption.SetOrder(platform.Order_Name, desc)
-	default:
+	case "id":
 		findOption.SetOrder(platform.Order_ID, desc)
+	default:
+		return errors.NewInvalidRequest(
+			errors.Layer_Request,
+			errors.NewInformation(
+				errors.ID_InvalidParams,
+				"order convert error",
+				[]errors.InvalidParams{
+					errors.NewInvalidParams("order", q.Get("order")),
+				},
+			),
+			"order convert error",
+		)
 	}
 	return nil
 }
 
+// Find: set search mode param
 func setSearchMode(findOption *platform.FindOption, q url.Values) error {
+	// モードがないときは何もせず終了
+	if !q.Has("mode") {
+		return nil
+	}
 	// 検索モードのチェック
 	var err error
 	switch q.Get("mode") {
@@ -228,6 +251,18 @@ func setSearchMode(findOption *platform.FindOption, q url.Values) error {
 			}
 		}
 		findOption.SetPagination(platform.Limit(limit), platform.Offset(offset))
+	default:
+		return errors.NewInvalidRequest(
+			errors.Layer_Request,
+			errors.NewInformation(
+				errors.ID_InvalidParams,
+				"nothing mode error",
+				[]errors.InvalidParams{
+					errors.NewInvalidParams("mode", q.Get("mode")),
+				},
+			),
+			"nothing mode error",
+		)
 	}
 	return nil
 }
