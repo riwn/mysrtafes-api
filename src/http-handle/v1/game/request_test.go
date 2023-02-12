@@ -1,54 +1,200 @@
 package game
 
 import (
+	"context"
 	"io"
 	"mysrtafes-backend/pkg/game"
 	"mysrtafes-backend/pkg/game/platform"
+	"mysrtafes-backend/pkg/game/tag"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
-	"reflect"
 	"strings"
 	"testing"
+	"time"
+
+	"github.com/go-chi/chi/v5"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestNewGameCreate(t *testing.T) {
 	type args struct {
-		r *http.Request
+		method string
+		url    string
+		body   io.Reader
 	}
 	tests := []struct {
 		name    string
 		args    args
 		want    *game.Game
 		want1   []platform.ID
-		want2   []game.ID
+		want2   []tag.ID
 		wantErr bool
 	}{
-		// TODO: Add test cases.
+		{
+			name: "OK",
+			args: args{
+				method: http.MethodPost,
+				url:    "http://example.com",
+				body: strings.NewReader(`{
+                    "name": "TestGame",
+                    "description": "desc",
+                    "publisher":"Nintendo",
+                    "developer":"Chu Soft",
+                    "release_date": "1997-01-22",
+                    "links": [
+                        {
+                            "title": "wiki",
+                            "url": "http://example.com",
+                            "description":"色々知れます"
+                        },
+                        {
+                            "title": "wiki2",
+                            "url": "http://example.com2",
+                            "description":"色々知れます2"
+                        }
+                    ],
+                    "tag_ids": [1,2,3,4],
+                    "platform_ids": [2,3,4]
+                }`),
+			},
+			want: &game.Game{
+				Name:        "TestGame",
+				Description: "desc",
+				Publisher:   "Nintendo",
+				Developer:   "Chu Soft",
+				ReleaseDate: game.ReleaseDate(time.Date(1997, 1, 22, 0, 0, 0, 0, time.UTC)),
+				Links: []*game.Link{
+					{
+						Title: "wiki",
+						URL: func() game.URL {
+							g, _ := game.NewURL("http://example.com")
+							return g
+						}(),
+						LinkDescription: "色々知れます",
+					},
+					{
+						Title: "wiki2",
+						URL: func() game.URL {
+							g, _ := game.NewURL("http://example.com2")
+							return g
+						}(),
+						LinkDescription: "色々知れます2",
+					},
+				},
+			},
+			want1:   []platform.ID{2, 3, 4},
+			want2:   []tag.ID{1, 2, 3, 4},
+			wantErr: false,
+		},
+		{
+			name: "release date decode error",
+			args: args{
+				method: http.MethodPost,
+				url:    "http://example.com",
+				body: strings.NewReader(`{
+                    "name": "TestGame",
+                    "description": "desc",
+                    "publisher":"Nintendo",
+                    "developer":"Chu Soft",
+                    "release_date": "1997/01/22",
+                    "links": [
+                        {
+                            "title": "wiki",
+                            "url": "http://example.com",
+                            "description":"色々知れます"
+                        },
+                        {
+                            "title": "wiki2",
+                            "url": "http://example.com2",
+                            "description":"色々知れます2"
+                        }
+                    ],
+                    "tag_ids": [1,2,3,4],
+                    "platform_ids": [2,3,4]
+                }`),
+			},
+			wantErr: true,
+		},
+		{
+			name: "url decode error",
+			args: args{
+				method: http.MethodPost,
+				url:    "http://example.com",
+				body: strings.NewReader(`{
+                    "name": "TestGame",
+                    "description": "desc",
+                    "publisher":"Nintendo",
+                    "developer":"Chu Soft",
+                    "release_date": "1997-01-22",
+                    "links": [
+                        {
+                            "title": "wiki",
+                            "url": "ht",
+                            "description":"色々知れます"
+                        },
+                        {
+                            "title": "wiki2",
+                            "url": "http://example.com2",
+                            "description":"色々知れます2"
+                        }
+                    ],
+                    "tag_ids": [1,2,3,4],
+                    "platform_ids": [2,3,4]
+                }`),
+			},
+			wantErr: true,
+		},
+		{
+			name: "decode err",
+			args: args{
+				method: http.MethodPost,
+				url:    "http://example.com",
+				body: strings.NewReader(`{
+                    "name": "TestGame",
+                    "description": "desc",
+                    "publisher":"Nintendo",
+                    "developer":"Chu Soft",
+                    "release_date": "1997-01-22",
+                    "links": [
+                        {
+                            "title": "wiki",
+                            "url": "http://example.com",
+                            "description":"色々知れます"
+                        },
+                        {
+                            "title": "wiki2",
+                            "url": "http://example.com2",
+                            "description":"色々知れます2"
+                        },
+                        "tag_ids": [1,2,3,4],
+                        "platform_ids": [2,3,4],
+                }`),
+			},
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, got1, got2, err := NewGameCreate(tt.args.r)
+			r := httptest.NewRequest(tt.args.method, tt.args.url, tt.args.body)
+			got, got1, got2, err := NewGameCreate(r)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("NewGameCreate() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewGameCreate() got = %v, want %v", got, tt.want)
-			}
-			if !reflect.DeepEqual(got1, tt.want1) {
-				t.Errorf("NewGameCreate() got1 = %v, want %v", got1, tt.want1)
-			}
-			if !reflect.DeepEqual(got2, tt.want2) {
-				t.Errorf("NewGameCreate() got2 = %v, want %v", got2, tt.want2)
-			}
+			assert.Equal(t, tt.want, got)
+			assert.Equal(t, tt.want1, got1)
+			assert.Equal(t, tt.want2, got2)
 		})
 	}
 }
 
 func TestNewGameID(t *testing.T) {
 	type args struct {
-		r *http.Request
+		method    string
+		url       string
+		body      io.Reader
+		pathParam map[string]string
 	}
 	tests := []struct {
 		name    string
@@ -56,18 +202,59 @@ func TestNewGameID(t *testing.T) {
 		want    game.ID
 		wantErr bool
 	}{
-		// TODO: Add test cases.
+		{
+			name: "OK",
+			args: args{
+				method: http.MethodGet,
+				url:    "http://example.com/1",
+				body:   strings.NewReader(``),
+				pathParam: map[string]string{
+					"gameID": "1",
+				},
+			},
+			want:    1,
+			wantErr: false,
+		},
+		{
+			name: "blank err",
+			args: args{
+				method: http.MethodGet,
+				url:    "http://example.com",
+				body:   strings.NewReader(``),
+				pathParam: map[string]string{
+					"gameID": "",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "decode err",
+			args: args{
+				method: http.MethodGet,
+				url:    "http://example.com",
+				body:   strings.NewReader(``),
+				pathParam: map[string]string{
+					"gameID": "jh",
+				},
+			},
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := NewGameID(tt.args.r)
+			ctx := chi.NewRouteContext()
+			for key, val := range tt.args.pathParam {
+				ctx.URLParams.Add(key, val)
+			}
+			r := httptest.NewRequest(tt.args.method, tt.args.url, tt.args.body)
+			r = r.WithContext(context.WithValue(r.Context(), chi.RouteCtxKey, ctx))
+
+			got, err := NewGameID(r)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("NewGameID() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewGameID() = %v, want %v", got, tt.want)
-			}
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
@@ -136,43 +323,231 @@ func TestNewGameFindOption(t *testing.T) {
 				t.Errorf("NewGameFindOption() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewGameFindOption() = %v, want %v", got, tt.want)
-			}
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
 
 func TestNewGameUpdate(t *testing.T) {
 	type args struct {
-		r *http.Request
+		method    string
+		url       string
+		body      io.Reader
+		pathParam map[string]string
 	}
 	tests := []struct {
 		name    string
 		args    args
 		want    *game.Game
 		want1   []platform.ID
-		want2   []game.ID
+		want2   []tag.ID
 		wantErr bool
 	}{
-		// TODO: Add test cases.
+		{
+			name: "OK",
+			args: args{
+				method: http.MethodPost,
+				url:    "http://example.com",
+				body: strings.NewReader(`{
+                    "id": 100,
+                    "name": "TestGame",
+                    "description": "desc",
+                    "publisher":"Nintendo",
+                    "developer":"Chu Soft",
+                    "release_date": "1997-01-22",
+                    "links": [
+                        {
+                            "title": "wiki",
+                            "url": "http://example.com",
+                            "description":"色々知れます"
+                        },
+                        {
+                            "title": "wiki2",
+                            "url": "http://example.com2",
+                            "description":"色々知れます2"
+                        }
+                    ],
+                    "tag_ids": [1,2,3,4],
+                    "platform_ids": [2,3,4]
+                }`),
+				pathParam: map[string]string{
+					"gameID": "1",
+				},
+			},
+			want: &game.Game{
+				ID:          1,
+				Name:        "TestGame",
+				Description: "desc",
+				Publisher:   "Nintendo",
+				Developer:   "Chu Soft",
+				ReleaseDate: game.ReleaseDate(time.Date(1997, 1, 22, 0, 0, 0, 0, time.UTC)),
+				Links: []*game.Link{
+					{
+						Title: "wiki",
+						URL: func() game.URL {
+							g, _ := game.NewURL("http://example.com")
+							return g
+						}(),
+						LinkDescription: "色々知れます",
+					},
+					{
+						Title: "wiki2",
+						URL: func() game.URL {
+							g, _ := game.NewURL("http://example.com2")
+							return g
+						}(),
+						LinkDescription: "色々知れます2",
+					},
+				},
+			},
+			want1:   []platform.ID{2, 3, 4},
+			want2:   []tag.ID{1, 2, 3, 4},
+			wantErr: false,
+		},
+		{
+			name: "bad id error",
+			args: args{
+				method: http.MethodPost,
+				url:    "http://example.com",
+				body: strings.NewReader(`{
+                    "name": "TestGame",
+                    "description": "desc",
+                    "publisher":"Nintendo",
+                    "developer":"Chu Soft",
+                    "release_date": "1997-01-22",
+                    "links": [
+                        {
+                            "title": "wiki",
+                            "url": "http://example.com",
+                            "description":"色々知れます"
+                        },
+                        {
+                            "title": "wiki2",
+                            "url": "http://example.com2",
+                            "description":"色々知れます2"
+                        }
+                    ],
+                    "tag_ids": [1,2,3,4],
+                    "platform_ids": [2,3,4]
+                }`),
+				pathParam: map[string]string{
+					"gameID": "test",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "release date decode error",
+			args: args{
+				method: http.MethodPost,
+				url:    "http://example.com",
+				body: strings.NewReader(`{
+                    "name": "TestGame",
+                    "description": "desc",
+                    "publisher":"Nintendo",
+                    "developer":"Chu Soft",
+                    "release_date": "1997/01/22",
+                    "links": [
+                        {
+                            "title": "wiki",
+                            "url": "http://example.com",
+                            "description":"色々知れます"
+                        },
+                        {
+                            "title": "wiki2",
+                            "url": "http://example.com2",
+                            "description":"色々知れます2"
+                        }
+                    ],
+                    "tag_ids": [1,2,3,4],
+                    "platform_ids": [2,3,4]
+                }`),
+				pathParam: map[string]string{
+					"gameID": "1",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "url decode error",
+			args: args{
+				method: http.MethodPost,
+				url:    "http://example.com",
+				body: strings.NewReader(`{
+                    "name": "TestGame",
+                    "description": "desc",
+                    "publisher":"Nintendo",
+                    "developer":"Chu Soft",
+                    "release_date": "1997-01-22",
+                    "links": [
+                        {
+                            "title": "wiki",
+                            "url": "ht",
+                            "description":"色々知れます"
+                        },
+                        {
+                            "title": "wiki2",
+                            "url": "http://example.com2",
+                            "description":"色々知れます2"
+                        }
+                    ],
+                    "tag_ids": [1,2,3,4],
+                    "platform_ids": [2,3,4]
+                }`),
+				pathParam: map[string]string{
+					"gameID": "1",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "decode err",
+			args: args{
+				method: http.MethodPost,
+				url:    "http://example.com",
+				body: strings.NewReader(`{
+                    "name": "TestGame",
+                    "description": "desc",
+                    "publisher":"Nintendo",
+                    "developer":"Chu Soft",
+                    "release_date": "1997-01-22",
+                    "links": [
+                        {
+                            "title": "wiki",
+                            "url": "http://example.com",
+                            "description":"色々知れます"
+                        },
+                        {
+                            "title": "wiki2",
+                            "url": "http://example.com2",
+                            "description":"色々知れます2"
+                        },
+                        "tag_ids": [1,2,3,4],
+                        "platform_ids": [2,3,4],
+                }`),
+				pathParam: map[string]string{
+					"gameID": "1",
+				},
+			},
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, got1, got2, err := NewGameUpdate(tt.args.r)
+			ctx := chi.NewRouteContext()
+			for key, val := range tt.args.pathParam {
+				ctx.URLParams.Add(key, val)
+			}
+			r := httptest.NewRequest(tt.args.method, tt.args.url, tt.args.body)
+			r = r.WithContext(context.WithValue(r.Context(), chi.RouteCtxKey, ctx))
+			got, got1, got2, err := NewGameUpdate(r)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("NewGameUpdate() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewGameUpdate() got = %v, want %v", got, tt.want)
-			}
-			if !reflect.DeepEqual(got1, tt.want1) {
-				t.Errorf("NewGameUpdate() got1 = %v, want %v", got1, tt.want1)
-			}
-			if !reflect.DeepEqual(got2, tt.want2) {
-				t.Errorf("NewGameUpdate() got2 = %v, want %v", got2, tt.want2)
-			}
+			assert.Equal(t, tt.want, got)
+			assert.Equal(t, tt.want1, got1)
+			assert.Equal(t, tt.want2, got2)
 		})
 	}
 }

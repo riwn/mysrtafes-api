@@ -565,49 +565,6 @@ func TestNewLink(t *testing.T) {
 	}
 }
 
-func TestNewLinkWithID(t *testing.T) {
-	type args struct {
-		id          LinkID
-		title       Title
-		url         URL
-		description LinkDescription
-	}
-	tests := []struct {
-		name string
-		args args
-		want *Link
-	}{
-		{
-			name: "OK",
-			args: args{
-				id:    100000,
-				title: Title("Test"),
-				url: func() URL {
-					url, _ := NewURL("https://example.com")
-					return url
-				}(),
-				description: LinkDescription("testです"),
-			},
-			want: func() *Link {
-				url, _ := NewURL("https://example.com")
-				link := &Link{
-					LinkID:          LinkID(100000),
-					Title:           Title("Test"),
-					URL:             url,
-					LinkDescription: LinkDescription("testです"),
-				}
-				return link
-			}(),
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got := NewLinkWithID(tt.args.id, tt.args.title, tt.args.url, tt.args.description)
-			assert.Equal(t, tt.want, got)
-		})
-	}
-}
-
 func TestNew(t *testing.T) {
 	type args struct {
 		name        Name

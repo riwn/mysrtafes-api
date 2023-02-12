@@ -91,10 +91,6 @@ func NewGameCreate(r *http.Request) (*game.Game, []platform.ID, []tag.ID, error)
 
 func NewGameID(r *http.Request) (game.ID, error) {
 	gameIDStr := chi.URLParam(r, "gameID")
-	// 空文字の時、0にして複数検索と判断
-	if gameIDStr == "" {
-		return 0, nil
-	}
 
 	gameID, err := strconv.Atoi(gameIDStr)
 	if err != nil {
@@ -134,15 +130,18 @@ func NewGameFindOption(r *http.Request) (*game.FindOption, error) {
 func NewGameUpdate(r *http.Request) (*game.Game, []platform.ID, []tag.ID, error) {
 	defer r.Body.Close()
 
+	gameID, err := NewGameID(r)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+
 	type Link struct {
-		ID              game.LinkID          `json:"id"`
 		Title           game.Title           `json:"title"`
 		URL             string               `json:"url"`
 		LinkDescription game.LinkDescription `json:"description"`
 	}
 
 	body := struct {
-		ID          game.ID          `json:"id"`
 		Name        game.Name        `json:"name"`
 		Description game.Description `json:"description"`
 		Publisher   game.Publisher   `json:"publisher"`
@@ -152,7 +151,7 @@ func NewGameUpdate(r *http.Request) (*game.Game, []platform.ID, []tag.ID, error)
 		PlatformIDs []platform.ID    `json:"platform_ids"`
 		TagIDs      []tag.ID         `json:"tag_ids"`
 	}{}
-	err := json.NewDecoder(r.Body).Decode(&body)
+	err = json.NewDecoder(r.Body).Decode(&body)
 	if err != nil {
 		return nil, nil, nil, errors.NewInvalidRequest(
 			errors.Layer_Request,
@@ -196,11 +195,11 @@ func NewGameUpdate(r *http.Request) (*game.Game, []platform.ID, []tag.ID, error)
 				"links.url create error",
 			)
 		}
-		Links = append(Links, game.NewLinkWithID(link.ID, link.Title, url, link.LinkDescription))
+		Links = append(Links, game.NewLink(link.Title, url, link.LinkDescription))
 	}
 
 	return game.NewWithID(
-		body.ID,
+		gameID,
 		body.Name,
 		body.Description,
 		body.Publisher,

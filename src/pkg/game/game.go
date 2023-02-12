@@ -130,15 +130,6 @@ func NewLink(title Title, url URL, description LinkDescription) *Link {
 	}
 }
 
-func NewLinkWithID(id LinkID, title Title, url URL, description LinkDescription) *Link {
-	return &Link{
-		LinkID:          id,
-		Title:           title,
-		URL:             url,
-		LinkDescription: description,
-	}
-}
-
 // ゲームマスタ
 type Game struct {
 	ID          ID
