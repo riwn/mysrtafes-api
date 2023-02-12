@@ -40,7 +40,9 @@ func (s services) Server() *http.Server {
 
 func (s services) apiV1Router() http.Handler {
 	r := chi.NewRouter()
+	// /api/v1/mystery-challenge2
 	r.Mount("/mystery-challenge2", s.mysChallengeRouter())
+	// /api/v1/games
 	r.Mount("/games", s.gameRouter())
 	return r
 }
@@ -54,35 +56,44 @@ func (s services) mysChallengeRouter() http.Handler {
 
 func (s services) gameRouter() http.Handler {
 	r := chi.NewRouter()
+	// /api/v1/games/tags
 	r.Mount("/tags", s.tagRouter())
+	// /api/v1/games/platforms
 	r.Mount("/platforms", s.platformRouter())
+
 	gameHandler := v1Game.NewGameHandler(s.Game)
-	r.Get("/", gameHandler.HandleGame)
+	// 複数操作
+	r.Get("/", gameHandler.HandleGameForMultiple)
+	// 単体操作
 	r.Get("/{gameID}", gameHandler.HandleGame)
-	r.Delete("/{gameID}", gameHandler.HandleGame)
 	r.Post("/", gameHandler.HandleGame)
-	r.Put("/", gameHandler.HandleGame)
+	r.Put("/{gameID}", gameHandler.HandleGame)
+	r.Delete("/{gameID}", gameHandler.HandleGame)
 	return r
 }
 
 func (s services) tagRouter() http.Handler {
 	r := chi.NewRouter()
 	tagHandler := v1Tag.NewTagHandler(s.Tag)
-	r.Get("/", tagHandler.HandleTag)
+	// 複数操作
+	r.Get("/", tagHandler.HandleTagForMultiple)
+	// 単体操作
 	r.Get("/{tagID}", tagHandler.HandleTag)
-	r.Delete("/{tagID}", tagHandler.HandleTag)
 	r.Post("/", tagHandler.HandleTag)
-	r.Put("/", tagHandler.HandleTag)
+	r.Put("/{tagID}", tagHandler.HandleTag)
+	r.Delete("/{tagID}", tagHandler.HandleTag)
 	return r
 }
 
 func (s services) platformRouter() http.Handler {
 	r := chi.NewRouter()
 	platformHandler := v1Platform.NewPlatformHandler(s.Platform)
-	r.Get("/", platformHandler.HandlePlatform)
+	// 複数操作
+	r.Get("/", platformHandler.HandlePlatformForMultiple)
+	// 単体操作
 	r.Get("/{platformID}", platformHandler.HandlePlatform)
-	r.Delete("/{platformID}", platformHandler.HandlePlatform)
 	r.Post("/", platformHandler.HandlePlatform)
-	r.Put("/", platformHandler.HandlePlatform)
+	r.Put("/{platformID}", platformHandler.HandlePlatform)
+	r.Delete("/{platformID}", platformHandler.HandlePlatform)
 	return r
 }

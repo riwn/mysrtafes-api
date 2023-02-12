@@ -116,12 +116,8 @@ func NewGameID(r *http.Request) (game.ID, error) {
 func NewGameFindOption(r *http.Request) (*game.FindOption, error) {
 	// デフォルト値生成
 	findOption := game.NewFindOption()
-	// NOTE: QueryがNilのときはデフォルトで返却
-	q := r.URL.Query()
-	if q == nil {
-		return findOption, nil
-	}
 
+	q := r.URL.Query()
 	// 検索設定
 	if err := setSearchMode(findOption, q); err != nil {
 		return nil, err
@@ -214,6 +210,7 @@ func NewGameUpdate(r *http.Request) (*game.Game, []platform.ID, []tag.ID, error)
 	), body.PlatformIDs, body.TagIDs, nil
 }
 
+// Find: set order param
 func setOrder(findOption *game.FindOption, q url.Values) error {
 	// シーク法のときは並び替えするとおかしくなるので禁止
 	if findOption.SearchMode == game.SearchMode_Seek {
@@ -239,17 +236,40 @@ func setOrder(findOption *game.FindOption, q url.Values) error {
 		}
 	}
 
+	// 並び順がないときはIDのOrderで返却
+	if !q.Has("order") {
+		findOption.SetOrder(game.Order_ID, desc)
+		return nil
+	}
+
 	// 並び順のチェック
 	switch q.Get("order") {
 	case "name":
 		findOption.SetOrder(game.Order_Name, desc)
-	default:
+	case "id":
 		findOption.SetOrder(game.Order_ID, desc)
+	default:
+		return errors.NewInvalidRequest(
+			errors.Layer_Request,
+			errors.NewInformation(
+				errors.ID_InvalidParams,
+				"order convert error",
+				[]errors.InvalidParams{
+					errors.NewInvalidParams("order", q.Get("order")),
+				},
+			),
+			"order convert error",
+		)
 	}
 	return nil
 }
 
+// Find: set search mode param
 func setSearchMode(findOption *game.FindOption, q url.Values) error {
+	// モードがないときは何もせず終了
+	if !q.Has("mode") {
+		return nil
+	}
 	// 検索モードのチェック
 	var err error
 	switch q.Get("mode") {
@@ -330,6 +350,18 @@ func setSearchMode(findOption *game.FindOption, q url.Values) error {
 			}
 		}
 		findOption.SetPagination(game.Limit(limit), game.Offset(offset))
+	default:
+		return errors.NewInvalidRequest(
+			errors.Layer_Request,
+			errors.NewInformation(
+				errors.ID_InvalidParams,
+				"nothing mode error",
+				[]errors.InvalidParams{
+					errors.NewInvalidParams("mode", q.Get("mode")),
+				},
+			),
+			"nothing mode error",
+		)
 	}
 	return nil
 }
