@@ -12,3 +12,10 @@ services:
     volumes:
       - ./src:/go/src
       - ./cover:/go/cover
+  api-spec:
+    build:
+      context: '.'
+      dockerfile: './.image/api-spec.Dockerfile'
+    volumes:
+      - './documents/open-api:/data'
+      - ./spec:/spec

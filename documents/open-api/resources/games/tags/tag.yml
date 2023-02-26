@@ -1,0 +1,102 @@
+
+error: &errors
+  400:
+    $ref: '../../error.yml#/responses/400'
+  404:
+    $ref: '../../error.yml#/responses/404'
+  500:
+    $ref: '../../error.yml#/responses/500'
+
+tags:
+  post:
+    summary: タグ登録
+    operationId: 'post-tag'
+    tags:
+      - タグ
+    security: []
+    requestBody:
+      $ref: 'request.yml#/post'
+    responses:
+      201:
+        description: OK
+        content:
+          application/json:
+            schema:
+              $ref: './response.yml#/post'
+      <<: *errors
+  get:
+    summary: 検索条件指定タグ取得
+    operationId: 'find-tag'
+    tags:
+      - タグ
+    security: []
+    parameters:
+      - $ref: '../../common.yml#/query/mode'
+      - $ref: '../../common.yml#/query/limit'
+      - $ref: '../../common.yml#/query/offset'
+      - $ref: '../../common.yml#/query/last_id'
+      - $ref: '../../common.yml#/query/count'
+    responses:
+      200:
+        description: OK
+        content:
+          application/json:
+            schema:
+              $ref: './response.yml#/find'
+      <<: *errors
+tag:
+  get:
+    summary: 指定タグ取得
+    operationId: 'read-tag'
+    tags:
+      - タグ
+    security: []
+    parameters:
+      - &queryid
+        name: tag_id
+        required: true
+        in: path
+        schema:
+          $ref: './resource.yml#/entity/id'
+    responses:
+      200:
+        description: OK
+        content:
+          application/json:
+            schema:
+              $ref: './response.yml#/read'
+      <<: *errors
+  put:
+    summary: 指定タグ更新
+    operationId: 'put-tag'
+    tags:
+      - タグ
+    security: []
+    parameters:
+      - *queryid
+    requestBody:
+      $ref: 'request.yml#/post'
+    responses:
+      200:
+        description: OK
+        content:
+          application/json:
+            schema:
+              $ref: './response.yml#/post'
+      <<: *errors
+  delete:
+    summary: 指定タグ削除
+    operationId: 'delete-tag'
+    tags:
+      - タグ
+    security: []
+    parameters:
+      - *queryid
+    responses:
+      200:
+        description: OK
+        content:
+          application/json:
+            schema:
+              $ref: './response.yml#/delete'
+      <<: *errors

@@ -1,0 +1,30 @@
+
+entity:
+  id:
+    type: integer
+    format: int32
+    description: |
+      ### Tag ID
+      タグを一意に識別するID
+  name:
+    type: string
+    description: |
+      ### Tag Name
+      タグの名称
+  description:
+    type: string
+    description: |
+      ### Link Description
+      タグの説明
+  created_at:
+    type: string
+    format: date-time
+    description: |
+      ### Tag Create At
+      タグ登録時刻
+  updated_at:
+    type: string
+    format: date-time
+    description: |
+      ### Tag Update At
+      タグ更新時刻

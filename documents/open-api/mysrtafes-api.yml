@@ -1,0 +1,34 @@
+openapi: 3.0.2
+info:
+  title: "不思議フェス Backend Api"
+  description: |
+    ### 不思議フェスAPI
+    不思議フェスサイトのbackend api仕様書です
+  version: "1.0.0"
+servers:
+  - url: https://dev.api.mysrtafes.com
+    description: Dev環境
+  - url: https://api.mysrtafes.com
+    description: Production環境
+
+paths:
+  /api/v1/games:
+    $ref: './resources/games/game.yml#/games'
+  /api/v1/games/{game_id}:
+    $ref: './resources/games/game.yml#/game'
+  /api/v1/games/tags:
+    $ref: './resources/games/tags/tag.yml#/tags'
+  /api/v1/games/tags/{tag_id}:
+    $ref: './resources/games/tags/tag.yml#/tag'
+  /api/v1/games/platforms:
+    $ref: './resources/games/platforms/platform.yml#/platforms'
+  /api/v1/games/platforms/{platform_id}:
+    $ref: './resources/games/platforms/platform.yml#/platform'
+
+tags:
+  - name: ゲーム
+    description: ゲームのマスタに関するAPI
+  - name: タグ
+    description: タグに関するAPI
+  - name: プラットフォーム
+    description: プラットフォームに関するAPI

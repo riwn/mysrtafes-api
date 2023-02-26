@@ -1,0 +1,102 @@
+
+error: &errors
+  400:
+    $ref: '../../error.yml#/responses/400'
+  404:
+    $ref: '../../error.yml#/responses/404'
+  500:
+    $ref: '../../error.yml#/responses/500'
+
+platforms:
+  post:
+    summary: プラットフォーム登録
+    operationId: 'post-platform'
+    tags:
+      - プラットフォーム
+    security: []
+    requestBody:
+      $ref: 'request.yml#/post'
+    responses:
+      201:
+        description: OK
+        content:
+          application/json:
+            schema:
+              $ref: './response.yml#/post'
+      <<: *errors
+  get:
+    summary: 検索条件指定プラットフォーム取得
+    operationId: 'find-platform'
+    tags:
+      - プラットフォーム
+    security: []
+    parameters:
+      - $ref: '../../common.yml#/query/mode'
+      - $ref: '../../common.yml#/query/limit'
+      - $ref: '../../common.yml#/query/offset'
+      - $ref: '../../common.yml#/query/last_id'
+      - $ref: '../../common.yml#/query/count'
+    responses:
+      200:
+        description: OK
+        content:
+          application/json:
+            schema:
+              $ref: './response.yml#/find'
+      <<: *errors
+platform:
+  get:
+    summary: 指定プラットフォーム取得
+    operationId: 'read-platform'
+    tags:
+      - プラットフォーム
+    security: []
+    parameters:
+      - &queryid
+        name: platform_id
+        required: true
+        in: path
+        schema:
+          $ref: './resource.yml#/entity/id'
+    responses:
+      200:
+        description: OK
+        content:
+          application/json:
+            schema:
+              $ref: './response.yml#/read'
+      <<: *errors
+  put:
+    summary: 指定プラットフォーム更新
+    operationId: 'put-platform'
+    tags:
+      - プラットフォーム
+    security: []
+    parameters:
+      - *queryid
+    requestBody:
+      $ref: 'request.yml#/post'
+    responses:
+      200:
+        description: OK
+        content:
+          application/json:
+            schema:
+              $ref: './response.yml#/post'
+      <<: *errors
+  delete:
+    summary: 指定プラットフォーム削除
+    operationId: 'delete-platform'
+    tags:
+      - プラットフォーム
+    security: []
+    parameters:
+      - *queryid
+    responses:
+      200:
+        description: OK
+        content:
+          application/json:
+            schema:
+              $ref: './response.yml#/delete'
+      <<: *errors

@@ -16,3 +16,7 @@ api-build:
 
 down:
 	docker compose down
+
+# API Spec
+mysrtafes-api.html:
+	docker compose run --rm api-spec build --output ../spec/mysrtafes-api.html mysrtafes-api.yml --options.theme.colors.primary.main=orange

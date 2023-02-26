@@ -1,0 +1,26 @@
+post:
+  required: true
+  content:
+    application/json:
+      schema:
+        required:
+          - name
+        type: object
+        properties:
+          name:
+            $ref: './resource.yml#/entity/name'
+          description:
+            $ref: './resource.yml#/entity/description'
+put:
+  required: true
+  content:
+    application/json:
+      schema:
+        required:
+          - name
+        type: object
+        properties:
+          name:
+            $ref: './resource.yml#/entity/name'
+          description:
+            $ref: './resource.yml#/entity/description'
