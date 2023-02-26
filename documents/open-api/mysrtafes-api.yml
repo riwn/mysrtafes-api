@@ -20,6 +20,10 @@ paths:
     $ref: './resources/games/tags/tag.yml#/tags'
   /api/v1/games/tags/{tag_id}:
     $ref: './resources/games/tags/tag.yml#/tag'
+  /api/v1/games/platforms:
+    $ref: './resources/games/platforms/platform.yml#/platforms'
+  /api/v1/games/platforms/{platform_id}:
+    $ref: './resources/games/platforms/platform.yml#/platform'
 
 tags:
   - name: ゲーム
