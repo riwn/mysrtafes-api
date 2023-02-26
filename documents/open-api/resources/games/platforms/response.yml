@@ -39,7 +39,7 @@ delete:
       $ref: '../../common.yml#/response/code'
     message:
       $ref: '../../common.yml#/response/message'
-    count:
+    delete_id:
       type: integer
       description: |
-      ### 削除されたデータ数
+      ### 削除したID
