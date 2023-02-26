@@ -42,4 +42,4 @@ delete:
     delete_id:
       type: integer
       description: |
-      ### 削除したID
+        ### 削除したID

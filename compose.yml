@@ -19,10 +19,3 @@ services:
     volumes:
       - './documents/open-api:/data'
       - ./spec:/spec
-  spec-preview:
-    image: 'redocly/redoc'
-    volumes:
-      - './documents/open-api:/usr/share/nginx/html/swagger'
-    environment:
-      SPEC_URL: './swagger/mysrtafes-api.yml'
-      PORT: 8080

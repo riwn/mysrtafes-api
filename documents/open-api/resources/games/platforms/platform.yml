@@ -92,13 +92,11 @@ platform:
     security: []
     parameters:
       - *queryid
-    requestBody:
-      $ref: 'request.yml#/post'
     responses:
       200:
         description: OK
         content:
           application/json:
             schema:
-              $ref: './response.yml#/post'
+              $ref: './response.yml#/delete'
       <<: *errors
