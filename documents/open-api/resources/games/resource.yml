@@ -1,0 +1,94 @@
+entity:
+  id:
+    type: integer
+    format: int32
+    description: |
+      ### Game ID
+      ゲームを一意に識別するID
+  name:
+    type: string
+    description: |
+      ### Game Title
+      ゲームの名称
+  description:
+    type: string
+    description: |
+      ### Game Description
+      ゲームの説明
+  release_date:
+    type: string
+    format: date
+    description: |
+      ### Game Release Date
+      ゲームのリリース日
+  publisher:
+    type: string
+    description: |
+      ### Game Publisher
+      ゲームの発売元の会社
+  developer:
+    type: string
+    description: |
+      ### Game Developer
+      ゲームの開発元の会社
+  links:
+    type: array
+    description: |
+      ### Game Links
+      ゲームに関連するリンク集  
+      登録するものがないときは空配列を指定
+    items:
+      type: object
+      properties:
+        title:
+          type: string
+          description: |
+            ### Link Title
+            リンク先のタイトル
+        url:
+          type: string
+          format: url
+          description: |
+            ### Link URL
+            ゲームに関連するURLリンク
+        description:
+          type: string
+          description: |
+            ### Link Description
+            リンク先の詳細説明
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+  tags:
+    type: array
+    description: |
+      ### Game Tags
+      ゲームに関連するタグ
+    items:
+      type: object
+      properties:
+        $ref: "./tags/resource.yml#/entity"
+  platforms:
+    type: array
+    description: |
+      ### Game Platforms
+      ゲームが発売されているプラットフォーム
+    items:
+      type: object
+      properties:
+        $ref: "./platforms/resource.yml#/entity"
+  created_at:
+    type: string
+    format: date-time
+    description: |
+      ## Game Create At
+      ゲーム登録時刻
+  updated_at:
+    type: string
+    format: date-time
+    description: |
+      ## Game Update At
+      ゲーム更新時刻

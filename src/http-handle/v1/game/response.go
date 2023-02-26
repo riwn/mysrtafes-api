@@ -41,6 +41,7 @@ type TagResponse struct {
 }
 
 type LinkResponse struct {
+	Title       game.Title           `json:"title"`
 	URL         string               `json:"url"`
 	Description game.LinkDescription `json:"description"`
 	CreatedAt   time.Time            `json:"created_at"`
@@ -85,6 +86,7 @@ func writeGame(w http.ResponseWriter, statusCode int, msg string, game *game.Gam
 	links := make([]LinkResponse, 0, len(game.Links))
 	for _, link := range game.Links {
 		links = append(links, LinkResponse{
+			Title:       link.Title,
 			URL:         link.URL.URL().String(),
 			Description: link.LinkDescription,
 			CreatedAt:   link.CreatedAt,
@@ -147,6 +149,7 @@ func writeGames(w http.ResponseWriter, statusCode int, msg string, games []*game
 		links := make([]LinkResponse, 0, len(game.Links))
 		for _, link := range game.Links {
 			links = append(links, LinkResponse{
+				Title:       link.Title,
 				URL:         link.URL.URL().String(),
 				Description: link.LinkDescription,
 				CreatedAt:   link.CreatedAt,

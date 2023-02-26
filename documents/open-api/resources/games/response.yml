@@ -1,0 +1,45 @@
+read: &read
+  type: object
+  properties:
+    code:
+      $ref: '../common.yml#/response/code'
+    message:
+      $ref: '../common.yml#/response/message'
+    data:
+      type: object
+      description: |
+        ### data
+        ゲームのデータ
+      properties:
+        $ref: 'resource.yml#/entity'
+find:
+  type: object
+  properties:
+    code:
+      $ref: '../common.yml#/response/code'
+    message:
+      $ref: '../common.yml#/response/message'
+    data:
+      type: array
+      description: |
+        ### data
+        ゲームのデータリスト
+      items:
+        type: object
+        properties:
+          $ref: 'resource.yml#/entity'
+post:
+  <<: *read
+put:
+  <<: *read
+delete:
+  type: object
+  properties:
+    code:
+      $ref: '../common.yml#/response/code'
+    message:
+      $ref: '../common.yml#/response/message'
+    count:
+      type: integer
+      description: |
+      ### 削除されたデータ数

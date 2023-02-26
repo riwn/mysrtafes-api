@@ -1,0 +1,63 @@
+response:
+  code:
+    type: integer
+    format: int32
+    description: |
+      ### HTTP Status Code
+  message:
+    type: string
+    description: |
+      ### HTTP Status Code Message
+
+query:
+  mode:
+    name: mode
+    in: query
+    schema:
+      type: string
+      default: 'all'
+      description: |
+        ### 検索モード
+        - `all`: すべて取得
+        - `page`: ページネーションでの検索
+        - `seek`: シーク法での検索
+  limit:
+    name: limit
+    in: query
+    schema:
+      type: integer
+      default: 30
+      minimum: 1
+      description: |
+        ### データ取得数
+        `mode=page`の時に有効
+  offset:
+    name: offset
+    in: query
+    schema:
+      type: integer
+      default: 0
+      description: |
+        ### オフセット
+        `mode=page`の時に有効  
+        取得するページ番号を指定
+  last_id:
+    name: last_id
+    in: query
+    schema:
+      type: integer
+      default: 0
+      description: |
+        ### 最終ID
+        `mode=seek`の時に有効  
+        前回のデータの最終IDを指定
+  count:
+    name: count
+    in: query
+    schema:
+      type: integer
+      default: 30
+      description: |
+        ### 取得データ数
+        `mode=seek`の時に有効  
+        取得したいデータ数を指定

@@ -1,0 +1,78 @@
+post:
+  required: true
+  content:
+    application/json:
+      schema:
+        required:
+          - name
+          - description
+          - release_date
+        type: object
+        properties:
+          name:
+            $ref: './resource.yml#/entity/name'
+          description:
+            $ref: './resource.yml#/entity/description'
+          release_date:
+            $ref: './resource.yml#/entity/release_date'
+          publisher:
+            $ref: './resource.yml#/entity/publisher'
+          developer:
+            $ref: './resource.yml#/entity/developer'
+          links:
+            $ref: './resource.yml#/entity/links'
+          tags:
+            type: array
+            description: |
+              ### Game Tags
+              ゲームに関連するタグのID  
+              存在しないIDを指定した場合はエラーになります。
+            items:
+              type: integer
+          platforms:
+            type: array
+            description: |
+              ### Game Platforms
+              ゲームが発売されているプラットフォームのID  
+              存在しないIDを指定した場合はエラーになります。
+            items:
+              type: integer
+put:
+  required: true
+  content:
+    application/json:
+      schema:
+        required:
+          - name
+          - description
+          - release_date
+        type: object
+        properties:
+          name:
+            $ref: './resource.yml#/entity/name'
+          description:
+            $ref: './resource.yml#/entity/description'
+          release_date:
+            $ref: './resource.yml#/entity/release_date'
+          publisher:
+            $ref: './resource.yml#/entity/publisher'
+          developer:
+            $ref: './resource.yml#/entity/developer'
+          links:
+            $ref: './resource.yml#/entity/links'
+          tags:
+            type: array
+            description: |
+              ### Game Tags
+              ゲームに関連するタグのID  
+              存在しないIDを指定した場合はエラーになります。
+            items:
+              type: integer
+          platforms:
+            type: array
+            description: |
+              ### Game Platforms
+              ゲームが発売されているプラットフォームのID  
+              存在しないIDを指定した場合はエラーになります。
+            items:
+              type: integer

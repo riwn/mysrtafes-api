@@ -1,0 +1,30 @@
+
+entity:
+  id:
+    type: integer
+    format: int32
+    description: |
+      ### Platform ID
+      プラットフォームを一意に識別するID
+  name:
+    type: string
+    description: |
+      ### Platform Name
+      プラットフォームの名称
+  description:
+    type: string
+    description: |
+      ### Platform Description
+      プラットフォームの説明
+  created_at:
+    type: string
+    format: date-time
+    description: |
+      ### Platform Create At
+      プラットフォーム登録時刻
+  updated_at:
+    type: string
+    format: date-time
+    description: |
+      ### Platform Update At
+      プラットフォーム更新時刻

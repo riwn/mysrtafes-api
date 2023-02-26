@@ -1,0 +1,104 @@
+
+error: &errors
+  400:
+    $ref: '../error.yml#/responses/400'
+  404:
+    $ref: '../error.yml#/responses/404'
+  500:
+    $ref: '../error.yml#/responses/500'
+
+games:
+  post:
+    summary: ゲーム登録
+    operationId: 'post-game'
+    tags:
+      - ゲーム
+    security: []
+    requestBody:
+      $ref: 'request.yml#/post'
+    responses:
+      201:
+        description: OK
+        content:
+          application/json:
+            schema:
+              $ref: './response.yml#/post'
+      <<: *errors
+  get:
+    summary: 検索条件指定ゲーム取得
+    operationId: 'find-game'
+    tags:
+      - ゲーム
+    security: []
+    parameters:
+      - $ref: '../common.yml#/query/mode'
+      - $ref: '../common.yml#/query/limit'
+      - $ref: '../common.yml#/query/offset'
+      - $ref: '../common.yml#/query/last_id'
+      - $ref: '../common.yml#/query/count'
+    responses:
+      200:
+        description: OK
+        content:
+          application/json:
+            schema:
+              $ref: './response.yml#/find'
+      <<: *errors
+game:
+  get:
+    summary: 指定ゲーム取得
+    operationId: 'read-game'
+    tags:
+      - ゲーム
+    security: []
+    parameters:
+      - &queryid
+        name: game_id
+        required: true
+        in: path
+        schema:
+          $ref: './resource.yml#/entity/id'
+    responses:
+      200:
+        description: OK
+        content:
+          application/json:
+            schema:
+              $ref: './response.yml#/read'
+      <<: *errors
+  put:
+    summary: 指定ゲーム更新
+    operationId: 'put-game'
+    tags:
+      - ゲーム
+    security: []
+    parameters:
+      - *queryid
+    requestBody:
+      $ref: 'request.yml#/post'
+    responses:
+      200:
+        description: OK
+        content:
+          application/json:
+            schema:
+              $ref: './response.yml#/post'
+      <<: *errors
+  delete:
+    summary: 指定ゲーム削除
+    operationId: 'delete-game'
+    tags:
+      - ゲーム
+    security: []
+    parameters:
+      - *queryid
+    requestBody:
+      $ref: 'request.yml#/post'
+    responses:
+      200:
+        description: OK
+        content:
+          application/json:
+            schema:
+              $ref: './response.yml#/post'
+      <<: *errors

@@ -1,0 +1,50 @@
+schema:
+  error:
+    title: error response
+    description: エラーレスポンス
+    type: object
+    properties:
+      code:
+        type: integer
+        format: int32
+        description: |
+          ### ステータスコード
+      message:
+        type: string
+        description: |
+          ### エラーメッセージ
+    example:
+      code: 418
+      message: I'm a teapot
+
+responses:
+  400:
+    description: 'bad parameter'
+    content:
+      application/json:
+        schema:
+          properties:
+            $ref: '#/schema/error/properties'
+          example:
+            code: 400
+            message: validate error
+  404:
+    description: 'not found'
+    content:
+      application/json:
+        schema:
+          properties:
+            $ref: '#/schema/error/properties'
+          example:
+            code: 404
+            message: not found
+  500:
+    description: 'internal server error'
+    content:
+      application/json:
+        schema:
+          properties:
+            $ref: '#/schema/error/properties'
+          example:
+            code: 500
+            message: internal server error
