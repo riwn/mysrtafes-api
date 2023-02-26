@@ -59,10 +59,7 @@ func (h *platformHandler) create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := WriteCreatePlatform(w, platform); err != nil {
-		log.Println(err)
-		errors.WriteError(w, err)
-	}
+	WriteCreatePlatform(w, platform)
 }
 
 func (h *platformHandler) read(w http.ResponseWriter, r *http.Request) {
@@ -80,10 +77,7 @@ func (h *platformHandler) read(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := WriteReadPlatform(w, platform); err != nil {
-		log.Println(err)
-		errors.WriteError(w, err)
-	}
+	WriteReadPlatform(w, platform)
 }
 
 func (h *platformHandler) find(w http.ResponseWriter, r *http.Request) {
@@ -101,10 +95,7 @@ func (h *platformHandler) find(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := WriteFindPlatform(w, platforms, findOption); err != nil {
-		log.Println(err)
-		errors.WriteError(w, err)
-	}
+	WriteFindPlatform(w, platforms, findOption)
 }
 
 func (h *platformHandler) update(w http.ResponseWriter, r *http.Request) {
@@ -122,10 +113,7 @@ func (h *platformHandler) update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := WriteUpdatePlatform(w, platform); err != nil {
-		log.Println(err)
-		errors.WriteError(w, err)
-	}
+	WriteUpdatePlatform(w, platform)
 }
 
 func (h *platformHandler) delete(w http.ResponseWriter, r *http.Request) {
@@ -143,8 +131,5 @@ func (h *platformHandler) delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := WriteDeletePlatform(w, platformID); err != nil {
-		log.Println(err)
-		errors.WriteError(w, err)
-	}
+	WriteDeletePlatform(w, platformID)
 }

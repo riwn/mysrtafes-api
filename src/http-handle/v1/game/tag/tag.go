@@ -59,10 +59,7 @@ func (h *tagHandler) create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := WriteCreateTag(w, tag); err != nil {
-		log.Println(err)
-		errors.WriteError(w, err)
-	}
+	WriteCreateTag(w, tag)
 }
 
 func (h *tagHandler) read(w http.ResponseWriter, r *http.Request) {
@@ -80,10 +77,7 @@ func (h *tagHandler) read(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := WriteReadTag(w, tag); err != nil {
-		log.Println(err)
-		errors.WriteError(w, err)
-	}
+	WriteReadTag(w, tag)
 }
 
 func (h *tagHandler) find(w http.ResponseWriter, r *http.Request) {
@@ -101,10 +95,7 @@ func (h *tagHandler) find(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := WriteFindTag(w, tags, findOption); err != nil {
-		log.Println(err)
-		errors.WriteError(w, err)
-	}
+	WriteFindTag(w, tags, findOption)
 }
 
 func (h *tagHandler) update(w http.ResponseWriter, r *http.Request) {
@@ -122,10 +113,7 @@ func (h *tagHandler) update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := WriteUpdateTag(w, tag); err != nil {
-		log.Println(err)
-		errors.WriteError(w, err)
-	}
+	WriteUpdateTag(w, tag)
 }
 
 func (h *tagHandler) delete(w http.ResponseWriter, r *http.Request) {
@@ -143,8 +131,5 @@ func (h *tagHandler) delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := WriteDeleteTag(w, tagID); err != nil {
-		log.Println(err)
-		errors.WriteError(w, err)
-	}
+	WriteDeleteTag(w, tagID)
 }

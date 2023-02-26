@@ -51,7 +51,13 @@ func writeError(w http.ResponseWriter, statusCode int, err error) {
 	body := response{}
 	switch err := err.(type) {
 	case errors.Informator:
-		code, message := err.Information().Code.Detail()
+		var code errors.Code
+		var message errors.Message
+		var invalidParams interface{}
+		if err.Information() != nil {
+			code, message = err.Information().Code.Detail()
+			invalidParams = err.Information().Problem
+		}
 		body.Error = errorWithInformation{
 			errorBase: errorBase{
 				Title:  http.StatusText(statusCode),
@@ -62,7 +68,7 @@ func writeError(w http.ResponseWriter, statusCode int, err error) {
 				ErrorCode:    code,
 				ErrorMessage: message,
 			},
-			InvalidParams: err.Information().Problem,
+			InvalidParams: invalidParams,
 		}
 	default:
 		body.Error = errorBase{

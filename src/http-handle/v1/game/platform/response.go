@@ -17,41 +17,41 @@ type PlatformResponse struct {
 
 // write create response for platform
 func WriteCreatePlatform(w http.ResponseWriter, platform *platform.Platform) error {
-	return writePlatform(w, http.StatusCreated, "success create platform", platform)
+	body := platFormResponse(http.StatusOK, "success create platform", platform)
+	w.Header().Set("Content-Type", "application/json")
+	return json.NewEncoder(w).Encode(&body)
 }
 
 // write read response for platform
 func WriteReadPlatform(w http.ResponseWriter, platform *platform.Platform) error {
-	return writePlatform(w, http.StatusOK, "success read platform", platform)
+	body := platFormResponse(http.StatusOK, "success read platform", platform)
+	w.Header().Set("Content-Type", "application/json")
+	return json.NewEncoder(w).Encode(&body)
 }
 
 // write update response for platform
 func WriteUpdatePlatform(w http.ResponseWriter, platform *platform.Platform) error {
-	return writePlatform(w, http.StatusOK, "success update platform", platform)
+	body := platFormResponse(http.StatusOK, "success update platform", platform)
+	w.Header().Set("Content-Type", "application/json")
+	return json.NewEncoder(w).Encode(&body)
 }
 
 // write delete response for platform
 func WriteDeletePlatform(w http.ResponseWriter, platformID platform.ID) error {
-	body := struct {
-		Code    int         `json:"code"`
-		Message string      `json:"message"`
-		Data    platform.ID `json:"deleteID"`
-	}{
-		Code:    http.StatusOK,
-		Message: "success delete platform",
-		Data:    platformID,
-	}
+	body := deletePlatformResponse(platformID)
 	w.Header().Set("Content-Type", "application/json")
 	return json.NewEncoder(w).Encode(&body)
 }
 
 // write find response for platform
 func WriteFindPlatform(w http.ResponseWriter, platforms []*platform.Platform, option *platform.FindOption) error {
-	return writePlatforms(w, http.StatusOK, "success find platform", platforms, option)
+	body := platFormsResponse(http.StatusOK, "success find platform", platforms, option)
+	w.Header().Set("Content-Type", "application/json")
+	return json.NewEncoder(w).Encode(&body)
 }
 
-func writePlatform(w http.ResponseWriter, statusCode int, msg string, platform *platform.Platform) error {
-	body := struct {
+func platFormResponse(statusCode int, msg string, platform *platform.Platform) interface{} {
+	return struct {
 		Code    int              `json:"code"`
 		Message string           `json:"message"`
 		Data    PlatformResponse `json:"data"`
@@ -66,12 +66,21 @@ func writePlatform(w http.ResponseWriter, statusCode int, msg string, platform *
 			UpdatedAt:   platform.UpdatedAt,
 		},
 	}
-
-	w.Header().Set("Content-Type", "application/json")
-	return json.NewEncoder(w).Encode(&body)
 }
 
-func writePlatforms(w http.ResponseWriter, statusCode int, msg string, platforms []*platform.Platform, option *platform.FindOption) error {
+func deletePlatformResponse(platformID platform.ID) interface{} {
+	return struct {
+		Code    int         `json:"code"`
+		Message string      `json:"message"`
+		Data    platform.ID `json:"deleteID"`
+	}{
+		Code:    http.StatusOK,
+		Message: "success delete platform",
+		Data:    platformID,
+	}
+}
+
+func platFormsResponse(statusCode int, msg string, platforms []*platform.Platform, option *platform.FindOption) interface{} {
 	responses := make([]PlatformResponse, 0, len(platforms))
 	var lastID platform.ID
 	for _, platform := range platforms {
@@ -104,7 +113,7 @@ func writePlatforms(w http.ResponseWriter, statusCode int, msg string, platforms
 			}
 		}
 
-		body := struct {
+		return struct {
 			Code    int                `json:"code"`
 			Message string             `json:"message"`
 			Data    []PlatformResponse `json:"data"`
@@ -115,36 +124,32 @@ func writePlatforms(w http.ResponseWriter, statusCode int, msg string, platforms
 			Data:    responses,
 			Next:    next,
 		}
-		w.Header().Set("Content-Type", "application/json")
-		return json.NewEncoder(w).Encode(&body)
 	case platform.SearchMode_Pagination:
-		type Next struct {
+		type Page struct {
 			Limit  platform.Limit  `json:"limit"`
 			Offset platform.Offset `json:"offset"`
 		}
-		var next *Next
+		var page *Page
 		if len(responses) == int(option.Pagination.Limit) {
-			next = &Next{
+			page = &Page{
 				Limit:  option.Pagination.Limit,
 				Offset: option.Pagination.Offset + len(responses),
 			}
 		}
 
-		body := struct {
+		return struct {
 			Code    int                `json:"code"`
 			Message string             `json:"message"`
 			Data    []PlatformResponse `json:"data"`
-			Next    *Next              `json:"next"`
+			Page    *Page              `json:"page"`
 		}{
 			Code:    statusCode,
 			Message: msg,
 			Data:    responses,
-			Next:    next,
+			Page:    page,
 		}
-		w.Header().Set("Content-Type", "application/json")
-		return json.NewEncoder(w).Encode(&body)
 	default:
-		body := struct {
+		return struct {
 			Code    int                `json:"code"`
 			Message string             `json:"message"`
 			Data    []PlatformResponse `json:"data"`
@@ -153,7 +158,5 @@ func writePlatforms(w http.ResponseWriter, statusCode int, msg string, platforms
 			Message: msg,
 			Data:    responses,
 		}
-		w.Header().Set("Content-Type", "application/json")
-		return json.NewEncoder(w).Encode(&body)
 	}
 }

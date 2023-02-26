@@ -59,10 +59,7 @@ func (h *gameHandler) create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := WriteCreateGame(w, game); err != nil {
-		log.Println(err)
-		errors.WriteError(w, err)
-	}
+	WriteCreateGame(w, game)
 }
 
 func (h *gameHandler) read(w http.ResponseWriter, r *http.Request) {
@@ -80,10 +77,7 @@ func (h *gameHandler) read(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := WriteReadGame(w, game); err != nil {
-		log.Println(err)
-		errors.WriteError(w, err)
-	}
+	WriteReadGame(w, game)
 }
 
 func (h *gameHandler) find(w http.ResponseWriter, r *http.Request) {
@@ -101,10 +95,7 @@ func (h *gameHandler) find(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := WriteFindGame(w, games, findOption); err != nil {
-		log.Println(err)
-		errors.WriteError(w, err)
-	}
+	WriteFindGame(w, games, findOption)
 }
 
 func (h *gameHandler) update(w http.ResponseWriter, r *http.Request) {
@@ -122,10 +113,7 @@ func (h *gameHandler) update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := WriteUpdateGame(w, game); err != nil {
-		log.Println(err)
-		errors.WriteError(w, err)
-	}
+	WriteUpdateGame(w, game)
 }
 
 func (h *gameHandler) delete(w http.ResponseWriter, r *http.Request) {
@@ -143,8 +131,5 @@ func (h *gameHandler) delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := WriteDeleteGame(w, gameID); err != nil {
-		log.Println(err)
-		errors.WriteError(w, err)
-	}
+	WriteDeleteGame(w, gameID)
 }
