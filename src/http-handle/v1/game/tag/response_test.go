@@ -1,19 +1,59 @@
-package platform
+package tag
 
 import (
-	"mysrtafes-backend/pkg/game/platform"
+	"mysrtafes-backend/pkg/game/tag"
 	"net/http"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
-func Test_platformsResponse(t *testing.T) {
+func Test_tagResponse(t *testing.T) {
 	type args struct {
 		statusCode int
 		msg        string
-		platforms  []*platform.Platform
-		option     *platform.FindOption
+		tag        *tag.Tag
+	}
+	tests := []struct {
+		name string
+		args args
+		want interface{}
+	}{
+		{
+			name: "ok",
+			args: args{
+				statusCode: http.StatusOK,
+				msg:        "OKです",
+				tag: &tag.Tag{
+					ID:          100,
+					Name:        "tagです",
+					Description: "Tagかも",
+				},
+			},
+			want: TagResponse{
+				Code:    http.StatusOK,
+				Message: "OKです",
+				Data: Tag{
+					ID:          100,
+					Name:        "tagです",
+					Description: "Tagかも",
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.want, tagResponse(tt.args.statusCode, tt.args.msg, tt.args.tag))
+		})
+	}
+}
+
+func Test_tagsResponse(t *testing.T) {
+	type args struct {
+		statusCode int
+		msg        string
+		tags       []*tag.Tag
+		option     *tag.FindOption
 	}
 	tests := []struct {
 		name string
@@ -25,29 +65,29 @@ func Test_platformsResponse(t *testing.T) {
 			args: args{
 				statusCode: http.StatusOK,
 				msg:        "non page",
-				platforms: []*platform.Platform{
+				tags: []*tag.Tag{
 					{
 						ID:          4,
 						Name:        "OK",
 						Description: "OKです",
 					},
 				},
-				option: &platform.FindOption{
-					SearchMode: platform.SearchMode_Pagination,
-					Pagination: platform.Pagination{
+				option: &tag.FindOption{
+					SearchMode: tag.SearchMode_Pagination,
+					Pagination: tag.Pagination{
 						Limit:  100,
 						Offset: 1000,
 					},
-					Seek: platform.Seek{
+					Seek: tag.Seek{
 						LastID: 1,
 						Count:  100,
 					},
 				},
 			},
-			want: PlatformsPageResponse{
+			want: TagsPageResponse{
 				Code:    http.StatusOK,
 				Message: "non page",
-				Data: []Platform{
+				Data: []Tag{
 					{
 						ID:          4,
 						Name:        "OK",
@@ -62,29 +102,29 @@ func Test_platformsResponse(t *testing.T) {
 			args: args{
 				statusCode: http.StatusOK,
 				msg:        "page",
-				platforms: []*platform.Platform{
+				tags: []*tag.Tag{
 					{
 						ID:          4,
 						Name:        "OK",
 						Description: "OKです",
 					},
 				},
-				option: &platform.FindOption{
-					SearchMode: platform.SearchMode_Pagination,
-					Pagination: platform.Pagination{
+				option: &tag.FindOption{
+					SearchMode: tag.SearchMode_Pagination,
+					Pagination: tag.Pagination{
 						Limit:  1,
 						Offset: 1000,
 					},
-					Seek: platform.Seek{
+					Seek: tag.Seek{
 						LastID: 1,
 						Count:  100,
 					},
 				},
 			},
-			want: PlatformsPageResponse{
+			want: TagsPageResponse{
 				Code:    http.StatusOK,
 				Message: "page",
-				Data: []Platform{
+				Data: []Tag{
 					{
 						ID:          4,
 						Name:        "OK",
@@ -102,29 +142,29 @@ func Test_platformsResponse(t *testing.T) {
 			args: args{
 				statusCode: http.StatusOK,
 				msg:        "non seek",
-				platforms: []*platform.Platform{
+				tags: []*tag.Tag{
 					{
 						ID:          101,
 						Name:        "OK",
 						Description: "OKです",
 					},
 				},
-				option: &platform.FindOption{
-					SearchMode: platform.SearchMode_Seek,
-					Pagination: platform.Pagination{
+				option: &tag.FindOption{
+					SearchMode: tag.SearchMode_Seek,
+					Pagination: tag.Pagination{
 						Limit:  100,
 						Offset: 1000,
 					},
-					Seek: platform.Seek{
+					Seek: tag.Seek{
 						LastID: 100,
 						Count:  2,
 					},
 				},
 			},
-			want: PlatformsNextResponse{
+			want: TagsNextResponse{
 				Code:    http.StatusOK,
 				Message: "non seek",
-				Data: []Platform{
+				Data: []Tag{
 					{
 						ID:          101,
 						Name:        "OK",
@@ -139,7 +179,7 @@ func Test_platformsResponse(t *testing.T) {
 			args: args{
 				statusCode: http.StatusOK,
 				msg:        "seek",
-				platforms: []*platform.Platform{
+				tags: []*tag.Tag{
 					{
 						ID:          101,
 						Name:        "OK",
@@ -151,22 +191,22 @@ func Test_platformsResponse(t *testing.T) {
 						Description: "OKです",
 					},
 				},
-				option: &platform.FindOption{
-					SearchMode: platform.SearchMode_Seek,
-					Pagination: platform.Pagination{
+				option: &tag.FindOption{
+					SearchMode: tag.SearchMode_Seek,
+					Pagination: tag.Pagination{
 						Limit:  1,
 						Offset: 1000,
 					},
-					Seek: platform.Seek{
+					Seek: tag.Seek{
 						LastID: 1,
 						Count:  2,
 					},
 				},
 			},
-			want: PlatformsNextResponse{
+			want: TagsNextResponse{
 				Code:    http.StatusOK,
 				Message: "seek",
-				Data: []Platform{
+				Data: []Tag{
 					{
 						ID:          101,
 						Name:        "OK",
@@ -189,29 +229,29 @@ func Test_platformsResponse(t *testing.T) {
 			args: args{
 				statusCode: http.StatusOK,
 				msg:        "all",
-				platforms: []*platform.Platform{
+				tags: []*tag.Tag{
 					{
 						ID:          4,
 						Name:        "OK",
 						Description: "OKです",
 					},
 				},
-				option: &platform.FindOption{
-					SearchMode: platform.SearchMode_All,
-					Pagination: platform.Pagination{
+				option: &tag.FindOption{
+					SearchMode: tag.SearchMode_All,
+					Pagination: tag.Pagination{
 						Limit:  1,
 						Offset: 1000,
 					},
-					Seek: platform.Seek{
+					Seek: tag.Seek{
 						LastID: 1,
 						Count:  100,
 					},
 				},
 			},
-			want: PlatformsResponse{
+			want: TagsResponse{
 				Code:    http.StatusOK,
 				Message: "all",
-				Data: []Platform{
+				Data: []Tag{
 					{
 						ID:          4,
 						Name:        "OK",
@@ -223,10 +263,7 @@ func Test_platformsResponse(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := platformsResponse(tt.args.statusCode, tt.args.msg, tt.args.platforms, tt.args.option)
-			if !assert.Equal(t, tt.want, got) {
-				return
-			}
+			assert.Equal(t, tt.want, tagsResponse(tt.args.statusCode, tt.args.msg, tt.args.tags, tt.args.option))
 		})
 	}
 }

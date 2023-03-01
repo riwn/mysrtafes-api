@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-type TagResponse struct {
+type Tag struct {
 	ID          tag.ID          `json:"id"`
 	Name        tag.Name        `json:"name"`
 	Description tag.Description `json:"description"`
@@ -15,24 +15,98 @@ type TagResponse struct {
 	UpdatedAt   time.Time       `json:"updated_at"`
 }
 
+type TagResponse struct {
+	Code    int    `json:"code"`
+	Message string `json:"message"`
+	Data    Tag    `json:"data"`
+}
+
+type TagsResponse struct {
+	Code    int    `json:"code"`
+	Message string `json:"message"`
+	Data    []Tag  `json:"data"`
+}
+
+type Next struct {
+	LastID tag.LastID `json:"last_id"`
+	Count  tag.Count  `json:"count"`
+}
+
+type TagsNextResponse struct {
+	Code    int    `json:"code"`
+	Message string `json:"message"`
+	Data    []Tag  `json:"data"`
+	Next    *Next  `json:"next"`
+}
+
+type Page struct {
+	Limit  tag.Limit  `json:"limit"`
+	Offset tag.Offset `json:"offset"`
+}
+
+type TagsPageResponse struct {
+	Code    int    `json:"code"`
+	Message string `json:"message"`
+	Data    []Tag  `json:"data"`
+	Page    *Page  `json:"page"`
+}
+
 // write create response for tag
 func WriteCreateTag(w http.ResponseWriter, tag *tag.Tag) error {
-	return writeTag(w, http.StatusCreated, "success create tag", tag)
+	body := tagResponse(http.StatusCreated, "success create tag", tag)
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	return json.NewEncoder(w).Encode(&body)
 }
 
 // write read response for tag
 func WriteReadTag(w http.ResponseWriter, tag *tag.Tag) error {
-	return writeTag(w, http.StatusOK, "success read tag", tag)
+	body := tagResponse(http.StatusOK, "success read tag", tag)
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	return json.NewEncoder(w).Encode(&body)
 }
 
 // write update response for tag
 func WriteUpdateTag(w http.ResponseWriter, tag *tag.Tag) error {
-	return writeTag(w, http.StatusOK, "success update tag", tag)
+	body := tagResponse(http.StatusOK, "success update tag", tag)
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	return json.NewEncoder(w).Encode(&body)
 }
 
 // write delete response for tag
 func WriteDeleteTag(w http.ResponseWriter, tagID tag.ID) error {
-	body := struct {
+	body := deleteTagResponse(tagID)
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	return json.NewEncoder(w).Encode(&body)
+}
+
+// write find response for tag
+func WriteFindTag(w http.ResponseWriter, tags []*tag.Tag, option *tag.FindOption) error {
+	body := tagsResponse(http.StatusOK, "success find tag", tags, option)
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	return json.NewEncoder(w).Encode(&body)
+}
+
+func tagResponse(statusCode int, msg string, tag *tag.Tag) interface{} {
+	return TagResponse{
+		Code:    statusCode,
+		Message: msg,
+		Data: Tag{
+			ID:          tag.ID,
+			Name:        tag.Name,
+			Description: tag.Description,
+			CreatedAt:   tag.CreatedAt,
+			UpdatedAt:   tag.UpdatedAt,
+		},
+	}
+}
+
+func deleteTagResponse(tagID tag.ID) interface{} {
+	return struct {
 		Code    int    `json:"code"`
 		Message string `json:"message"`
 		Data    tag.ID `json:"deleteID"`
@@ -41,43 +115,15 @@ func WriteDeleteTag(w http.ResponseWriter, tagID tag.ID) error {
 		Message: "success delete tag",
 		Data:    tagID,
 	}
-	w.Header().Set("Content-Type", "application/json")
-	return json.NewEncoder(w).Encode(&body)
 }
 
-// write find response for tag
-func WriteFindTag(w http.ResponseWriter, tags []*tag.Tag, option *tag.FindOption) error {
-	return writeTags(w, http.StatusOK, "success find tag", tags, option)
-}
-
-func writeTag(w http.ResponseWriter, statusCode int, msg string, tag *tag.Tag) error {
-	body := struct {
-		Code    int         `json:"code"`
-		Message string      `json:"message"`
-		Data    TagResponse `json:"data"`
-	}{
-		Code:    statusCode,
-		Message: msg,
-		Data: TagResponse{
-			ID:          tag.ID,
-			Name:        tag.Name,
-			Description: tag.Description,
-			CreatedAt:   tag.CreatedAt,
-			UpdatedAt:   tag.UpdatedAt,
-		},
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	return json.NewEncoder(w).Encode(&body)
-}
-
-func writeTags(w http.ResponseWriter, statusCode int, msg string, tags []*tag.Tag, option *tag.FindOption) error {
-	responses := make([]TagResponse, 0, len(tags))
+func tagsResponse(statusCode int, msg string, tags []*tag.Tag, option *tag.FindOption) interface{} {
+	responses := make([]Tag, 0, len(tags))
 	var lastID tag.ID
 	for _, tag := range tags {
 		responses = append(
 			responses,
-			TagResponse{
+			Tag{
 				ID:          tag.ID,
 				Name:        tag.Name,
 				Description: tag.Description,
@@ -92,10 +138,6 @@ func writeTags(w http.ResponseWriter, statusCode int, msg string, tags []*tag.Ta
 
 	switch option.SearchMode {
 	case tag.SearchMode_Seek:
-		type Next struct {
-			LastID tag.LastID `json:"last_id"`
-			Count  tag.Count  `json:"count"`
-		}
 		var next *Next
 		if len(responses) == int(option.Seek.Count) {
 			next = &Next{
@@ -104,56 +146,32 @@ func writeTags(w http.ResponseWriter, statusCode int, msg string, tags []*tag.Ta
 			}
 		}
 
-		body := struct {
-			Code    int           `json:"code"`
-			Message string        `json:"message"`
-			Data    []TagResponse `json:"data"`
-			Next    *Next         `json:"next"`
-		}{
+		return TagsNextResponse{
 			Code:    statusCode,
 			Message: msg,
 			Data:    responses,
 			Next:    next,
 		}
-		w.Header().Set("Content-Type", "application/json")
-		return json.NewEncoder(w).Encode(&body)
 	case tag.SearchMode_Pagination:
-		type Next struct {
-			Limit  tag.Limit  `json:"limit"`
-			Offset tag.Offset `json:"offset"`
-		}
-		var next *Next
+		var page *Page
 		if len(responses) == int(option.Pagination.Limit) {
-			next = &Next{
+			page = &Page{
 				Limit:  option.Pagination.Limit,
 				Offset: option.Pagination.Offset + len(responses),
 			}
 		}
 
-		body := struct {
-			Code    int           `json:"code"`
-			Message string        `json:"message"`
-			Data    []TagResponse `json:"data"`
-			Next    *Next         `json:"next"`
-		}{
+		return TagsPageResponse{
 			Code:    statusCode,
 			Message: msg,
 			Data:    responses,
-			Next:    next,
+			Page:    page,
 		}
-		w.Header().Set("Content-Type", "application/json")
-		return json.NewEncoder(w).Encode(&body)
 	default:
-		body := struct {
-			Code    int           `json:"code"`
-			Message string        `json:"message"`
-			Data    []TagResponse `json:"data"`
-		}{
+		return TagsResponse{
 			Code:    statusCode,
 			Message: msg,
 			Data:    responses,
 		}
-		w.Header().Set("Content-Type", "application/json")
-		return json.NewEncoder(w).Encode(&body)
 	}
 }

@@ -1,4 +1,4 @@
-package platform
+package tag
 
 import (
 	"context"
@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"io"
 	"mysrtafes-backend/pkg/errors"
-	"mysrtafes-backend/pkg/game/platform"
+	"mysrtafes-backend/pkg/game/tag"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -17,52 +17,52 @@ import (
 )
 
 type server struct {
-	Platform  *platform.Platform
-	Platforms []*platform.Platform
-	err       error
+	Tag  *tag.Tag
+	Tags []*tag.Tag
+	err  error
 	// flags
 	create, read, find, update, delete bool
 }
 
-func (s *server) Create(*platform.Platform) (*platform.Platform, error) {
+func (s *server) Create(*tag.Tag) (*tag.Tag, error) {
 	if s.create {
-		return s.Platform, s.err
+		return s.Tag, s.err
 	}
 	return nil, fmt.Errorf("failed create")
 }
-func (s *server) Read(platform.ID) (*platform.Platform, error) {
+func (s *server) Read(tag.ID) (*tag.Tag, error) {
 	if s.read {
-		return s.Platform, s.err
+		return s.Tag, s.err
 	}
 	return nil, fmt.Errorf("failed read")
 }
-func (s *server) Find(*platform.FindOption) ([]*platform.Platform, error) {
+func (s *server) Find(*tag.FindOption) ([]*tag.Tag, error) {
 	if s.find {
-		return s.Platforms, s.err
+		return s.Tags, s.err
 	}
 	return nil, fmt.Errorf("failed find")
 }
-func (s *server) Update(*platform.Platform) (*platform.Platform, error) {
+func (s *server) Update(*tag.Tag) (*tag.Tag, error) {
 	if s.update {
-		return s.Platform, s.err
+		return s.Tag, s.err
 	}
 	return nil, fmt.Errorf("failed update")
 }
-func (s *server) Delete(platform.ID) error {
+func (s *server) Delete(tag.ID) error {
 	if s.delete {
 		return s.err
 	}
 	return fmt.Errorf("failed delete")
 }
 
-func TestNewPlatformHandler(t *testing.T) {
+func TestNewTagHandler(t *testing.T) {
 	type args struct {
-		s platform.Server
+		s tag.Server
 	}
 	tests := []struct {
 		name string
 		args args
-		want *platformHandler
+		want *tagHandler
 	}{
 		{
 			name: "ok",
@@ -71,7 +71,7 @@ func TestNewPlatformHandler(t *testing.T) {
 					err: fmt.Errorf("failed delete"),
 				},
 			},
-			want: &platformHandler{
+			want: &tagHandler{
 				server: &server{
 					err: fmt.Errorf("failed delete"),
 				},
@@ -80,14 +80,14 @@ func TestNewPlatformHandler(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.Equal(t, NewPlatformHandler(tt.args.s), tt.want)
+			assert.Equal(t, NewTagHandler(tt.args.s), tt.want)
 		})
 	}
 }
 
-func Test_platformHandler_HandlePlatform(t *testing.T) {
+func Test_tagHandler_HandleTag(t *testing.T) {
 	type fields struct {
-		server platform.Server
+		server tag.Server
 	}
 	type args struct {
 		w         *httptest.ResponseRecorder
@@ -107,7 +107,7 @@ func Test_platformHandler_HandlePlatform(t *testing.T) {
 			name: "Get OK",
 			fields: fields{
 				server: &server{
-					Platform: &platform.Platform{
+					Tag: &tag.Tag{
 						ID:          1,
 						Name:        "Get OK",
 						Description: "Get OKです",
@@ -121,15 +121,15 @@ func Test_platformHandler_HandlePlatform(t *testing.T) {
 				url:    "http://example.com/1",
 				body:   strings.NewReader(``),
 				pathParam: map[string]string{
-					"platformID": "1",
+					"tagID": "1",
 				},
 			},
 			wantStatusCode: http.StatusOK,
 			wantBody: func() string {
-				body := platformResponse(
+				body := tagResponse(
 					http.StatusOK,
-					"success read platform",
-					&platform.Platform{
+					"success read tag",
+					&tag.Tag{
 						ID:          1,
 						Name:        "Get OK",
 						Description: "Get OKです",
@@ -143,7 +143,7 @@ func Test_platformHandler_HandlePlatform(t *testing.T) {
 			name: "Post OK",
 			fields: fields{
 				server: &server{
-					Platform: &platform.Platform{
+					Tag: &tag.Tag{
 						ID:          2,
 						Name:        "Post OK",
 						Description: "Post OKです",
@@ -160,10 +160,10 @@ func Test_platformHandler_HandlePlatform(t *testing.T) {
 			},
 			wantStatusCode: http.StatusCreated,
 			wantBody: func() string {
-				body := platformResponse(
+				body := tagResponse(
 					http.StatusCreated,
-					"success create platform",
-					&platform.Platform{
+					"success create tag",
+					&tag.Tag{
 						ID:          2,
 						Name:        "Post OK",
 						Description: "Post OKです",
@@ -177,7 +177,7 @@ func Test_platformHandler_HandlePlatform(t *testing.T) {
 			name: "Put OK",
 			fields: fields{
 				server: &server{
-					Platform: &platform.Platform{
+					Tag: &tag.Tag{
 						ID:          3,
 						Name:        "Put OK",
 						Description: "Put OKです",
@@ -191,15 +191,15 @@ func Test_platformHandler_HandlePlatform(t *testing.T) {
 				url:    "http://example.com/3",
 				body:   strings.NewReader(`{"name": "Put OK", "description": "Put OKです"}`),
 				pathParam: map[string]string{
-					"platformID": "3",
+					"tagID": "3",
 				},
 			},
 			wantStatusCode: http.StatusOK,
 			wantBody: func() string {
-				body := platformResponse(
+				body := tagResponse(
 					http.StatusOK,
-					"success update platform",
-					&platform.Platform{
+					"success update tag",
+					&tag.Tag{
 						ID:          3,
 						Name:        "Put OK",
 						Description: "Put OKです",
@@ -213,7 +213,7 @@ func Test_platformHandler_HandlePlatform(t *testing.T) {
 			name: "Delete OK",
 			fields: fields{
 				server: &server{
-					Platform: &platform.Platform{
+					Tag: &tag.Tag{
 						ID:          4,
 						Name:        "Delete OK",
 						Description: "Delete OKです",
@@ -227,12 +227,12 @@ func Test_platformHandler_HandlePlatform(t *testing.T) {
 				url:    "http://example.com/4",
 				body:   strings.NewReader(`{"name": "Delete OK", "description": "Delete OKです"}`),
 				pathParam: map[string]string{
-					"platformID": "4",
+					"tagID": "4",
 				},
 			},
 			wantStatusCode: http.StatusOK,
 			wantBody: func() string {
-				body := deletePlatformResponse(4)
+				body := deleteTagResponse(4)
 				str, _ := json.Marshal(body)
 				return string(str)
 			}(),
@@ -241,7 +241,7 @@ func Test_platformHandler_HandlePlatform(t *testing.T) {
 			name: "Bad Method NG",
 			fields: fields{
 				server: &server{
-					Platform: &platform.Platform{
+					Tag: &tag.Tag{
 						ID:          4,
 						Name:        "Delete OK",
 						Description: "Delete OKです",
@@ -255,7 +255,7 @@ func Test_platformHandler_HandlePlatform(t *testing.T) {
 				url:    "http://example.com/4",
 				body:   strings.NewReader(`{"name": "Delete OK", "description": "Delete OKです"}`),
 				pathParam: map[string]string{
-					"platformID": "4",
+					"tagID": "4",
 				},
 			},
 			wantStatusCode: http.StatusNotFound,
@@ -264,7 +264,7 @@ func Test_platformHandler_HandlePlatform(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			h := &platformHandler{
+			h := &tagHandler{
 				server: tt.fields.server,
 			}
 			ctx := chi.NewRouteContext()
@@ -273,7 +273,7 @@ func Test_platformHandler_HandlePlatform(t *testing.T) {
 			}
 			r := httptest.NewRequest(tt.args.method, tt.args.url, tt.args.body)
 			r = r.WithContext(context.WithValue(r.Context(), chi.RouteCtxKey, ctx))
-			h.HandlePlatform(tt.args.w, r)
+			h.HandleTag(tt.args.w, r)
 			if !assert.Equal(t, tt.wantStatusCode, tt.args.w.Code) {
 				return
 			}
@@ -285,9 +285,9 @@ func Test_platformHandler_HandlePlatform(t *testing.T) {
 	}
 }
 
-func Test_platformHandler_HandlePlatformForMultiple(t *testing.T) {
+func Test_tagHandler_HandleTagForMultiple(t *testing.T) {
 	type fields struct {
-		server platform.Server
+		server tag.Server
 	}
 	type args struct {
 		w         *httptest.ResponseRecorder
@@ -307,7 +307,7 @@ func Test_platformHandler_HandlePlatformForMultiple(t *testing.T) {
 			name: "Find OK",
 			fields: fields{
 				server: &server{
-					Platforms: []*platform.Platform{
+					Tags: []*tag.Tag{
 						{
 							ID:          5,
 							Name:        "Find1 OK",
@@ -336,10 +336,10 @@ func Test_platformHandler_HandlePlatformForMultiple(t *testing.T) {
 			},
 			wantStatusCode: http.StatusOK,
 			wantBody: func() string {
-				body := platformsResponse(
+				body := tagsResponse(
 					http.StatusOK,
-					"success find platform",
-					[]*platform.Platform{
+					"success find tag",
+					[]*tag.Tag{
 						{
 							ID:          5,
 							Name:        "Find1 OK",
@@ -356,7 +356,7 @@ func Test_platformHandler_HandlePlatformForMultiple(t *testing.T) {
 							Description: "Find3 OKです",
 						},
 					},
-					platform.NewFindOption(),
+					tag.NewFindOption(),
 				)
 				str, _ := json.Marshal(body)
 				return string(str)
@@ -366,7 +366,7 @@ func Test_platformHandler_HandlePlatformForMultiple(t *testing.T) {
 			name: "Bad Method NG",
 			fields: fields{
 				server: &server{
-					Platforms: []*platform.Platform{
+					Tags: []*tag.Tag{
 						{
 							ID:          5,
 							Name:        "Find1 OK",
@@ -399,7 +399,7 @@ func Test_platformHandler_HandlePlatformForMultiple(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			h := &platformHandler{
+			h := &tagHandler{
 				server: tt.fields.server,
 			}
 			ctx := chi.NewRouteContext()
@@ -408,7 +408,7 @@ func Test_platformHandler_HandlePlatformForMultiple(t *testing.T) {
 			}
 			r := httptest.NewRequest(tt.args.method, tt.args.url, tt.args.body)
 			r = r.WithContext(context.WithValue(r.Context(), chi.RouteCtxKey, ctx))
-			h.HandlePlatformForMultiple(tt.args.w, r)
+			h.HandleTagForMultiple(tt.args.w, r)
 			if !assert.Equal(t, tt.wantStatusCode, tt.args.w.Code) {
 				return
 			}
@@ -420,9 +420,9 @@ func Test_platformHandler_HandlePlatformForMultiple(t *testing.T) {
 	}
 }
 
-func Test_platformHandler_create(t *testing.T) {
+func Test_tagHandler_create(t *testing.T) {
 	type fields struct {
-		server platform.Server
+		server tag.Server
 	}
 	type args struct {
 		w         *httptest.ResponseRecorder
@@ -442,7 +442,7 @@ func Test_platformHandler_create(t *testing.T) {
 			name: "OK",
 			fields: fields{
 				server: &server{
-					Platform: &platform.Platform{
+					Tag: &tag.Tag{
 						ID:          1,
 						Name:        "OK",
 						Description: "OKです",
@@ -459,10 +459,10 @@ func Test_platformHandler_create(t *testing.T) {
 			},
 			wantStatusCode: http.StatusCreated,
 			wantBody: func() string {
-				body := platformResponse(
+				body := tagResponse(
 					http.StatusCreated,
-					"success create platform",
-					&platform.Platform{
+					"success create tag",
+					&tag.Tag{
 						ID:          1,
 						Name:        "OK",
 						Description: "OKです",
@@ -476,7 +476,7 @@ func Test_platformHandler_create(t *testing.T) {
 			name: "new request NG",
 			fields: fields{
 				server: &server{
-					Platform: &platform.Platform{
+					Tag: &tag.Tag{
 						ID:          1,
 						Name:        "NG",
 						Description: "NGです",
@@ -498,7 +498,7 @@ func Test_platformHandler_create(t *testing.T) {
 			name: "Create NG",
 			fields: fields{
 				server: &server{
-					Platform: &platform.Platform{
+					Tag: &tag.Tag{
 						ID:          1,
 						Name:        "NG",
 						Description: "NGです",
@@ -520,7 +520,7 @@ func Test_platformHandler_create(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			h := &platformHandler{
+			h := &tagHandler{
 				server: tt.fields.server,
 			}
 			ctx := chi.NewRouteContext()
@@ -541,9 +541,9 @@ func Test_platformHandler_create(t *testing.T) {
 	}
 }
 
-func Test_platformHandler_read(t *testing.T) {
+func Test_tagHandler_read(t *testing.T) {
 	type fields struct {
-		server platform.Server
+		server tag.Server
 	}
 	type args struct {
 		w         *httptest.ResponseRecorder
@@ -563,7 +563,7 @@ func Test_platformHandler_read(t *testing.T) {
 			name: "OK",
 			fields: fields{
 				server: &server{
-					Platform: &platform.Platform{
+					Tag: &tag.Tag{
 						ID:          1,
 						Name:        "OK",
 						Description: "OKです",
@@ -577,15 +577,15 @@ func Test_platformHandler_read(t *testing.T) {
 				url:    "http://example.com/1",
 				body:   strings.NewReader(``),
 				pathParam: map[string]string{
-					"platformID": "1",
+					"tagID": "1",
 				},
 			},
 			wantStatusCode: http.StatusOK,
 			wantBody: func() string {
-				body := platformResponse(
+				body := tagResponse(
 					http.StatusOK,
-					"success read platform",
-					&platform.Platform{
+					"success read tag",
+					&tag.Tag{
 						ID:          1,
 						Name:        "OK",
 						Description: "OKです",
@@ -599,7 +599,7 @@ func Test_platformHandler_read(t *testing.T) {
 			name: "new request NG",
 			fields: fields{
 				server: &server{
-					Platform: &platform.Platform{
+					Tag: &tag.Tag{
 						ID:          1,
 						Name:        "OK",
 						Description: "OKです",
@@ -613,7 +613,7 @@ func Test_platformHandler_read(t *testing.T) {
 				url:    "http://example.com/aa",
 				body:   strings.NewReader(``),
 				pathParam: map[string]string{
-					"platformID": "aa",
+					"tagID": "aa",
 				},
 			},
 			wantStatusCode: http.StatusBadRequest,
@@ -623,7 +623,7 @@ func Test_platformHandler_read(t *testing.T) {
 			name: "read NG",
 			fields: fields{
 				server: &server{
-					Platform: &platform.Platform{
+					Tag: &tag.Tag{
 						ID:          1,
 						Name:        "OK",
 						Description: "OKです",
@@ -638,7 +638,7 @@ func Test_platformHandler_read(t *testing.T) {
 				url:    "http://example.com/1",
 				body:   strings.NewReader(``),
 				pathParam: map[string]string{
-					"platformID": "1",
+					"tagID": "1",
 				},
 			},
 			wantStatusCode: http.StatusForbidden,
@@ -647,7 +647,7 @@ func Test_platformHandler_read(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			h := &platformHandler{
+			h := &tagHandler{
 				server: tt.fields.server,
 			}
 			ctx := chi.NewRouteContext()
@@ -668,9 +668,9 @@ func Test_platformHandler_read(t *testing.T) {
 	}
 }
 
-func Test_platformHandler_find(t *testing.T) {
+func Test_tagHandler_find(t *testing.T) {
 	type fields struct {
-		server platform.Server
+		server tag.Server
 	}
 	type args struct {
 		w         *httptest.ResponseRecorder
@@ -690,7 +690,7 @@ func Test_platformHandler_find(t *testing.T) {
 			name: "Find OK",
 			fields: fields{
 				server: &server{
-					Platforms: []*platform.Platform{
+					Tags: []*tag.Tag{
 						{
 							ID:          5,
 							Name:        "Find1 OK",
@@ -719,10 +719,10 @@ func Test_platformHandler_find(t *testing.T) {
 			},
 			wantStatusCode: http.StatusOK,
 			wantBody: func() string {
-				body := platformsResponse(
+				body := tagsResponse(
 					http.StatusOK,
-					"success find platform",
-					[]*platform.Platform{
+					"success find tag",
+					[]*tag.Tag{
 						{
 							ID:          5,
 							Name:        "Find1 OK",
@@ -739,7 +739,7 @@ func Test_platformHandler_find(t *testing.T) {
 							Description: "Find3 OKです",
 						},
 					},
-					platform.NewFindOption(),
+					tag.NewFindOption(),
 				)
 				str, _ := json.Marshal(body)
 				return string(str)
@@ -749,7 +749,7 @@ func Test_platformHandler_find(t *testing.T) {
 			name: "new request NG",
 			fields: fields{
 				server: &server{
-					Platforms: []*platform.Platform{
+					Tags: []*tag.Tag{
 						{
 							ID:          5,
 							Name:        "Find1 OK",
@@ -785,7 +785,7 @@ func Test_platformHandler_find(t *testing.T) {
 			name: "find NG",
 			fields: fields{
 				server: &server{
-					Platforms: []*platform.Platform{
+					Tags: []*tag.Tag{
 						{
 							ID:          5,
 							Name:        "Find1 OK",
@@ -819,7 +819,7 @@ func Test_platformHandler_find(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			h := &platformHandler{
+			h := &tagHandler{
 				server: tt.fields.server,
 			}
 			ctx := chi.NewRouteContext()
@@ -840,9 +840,9 @@ func Test_platformHandler_find(t *testing.T) {
 	}
 }
 
-func Test_platformHandler_update(t *testing.T) {
+func Test_tagHandler_update(t *testing.T) {
 	type fields struct {
-		server platform.Server
+		server tag.Server
 	}
 	type args struct {
 		w         *httptest.ResponseRecorder
@@ -862,7 +862,7 @@ func Test_platformHandler_update(t *testing.T) {
 			name: "OK",
 			fields: fields{
 				server: &server{
-					Platform: &platform.Platform{
+					Tag: &tag.Tag{
 						ID:          3,
 						Name:        "OK",
 						Description: "OKです",
@@ -876,15 +876,15 @@ func Test_platformHandler_update(t *testing.T) {
 				url:    "http://example.com/3",
 				body:   strings.NewReader(`{"name": "OK", "description": "OKです"}`),
 				pathParam: map[string]string{
-					"platformID": "3",
+					"tagID": "3",
 				},
 			},
 			wantStatusCode: http.StatusOK,
 			wantBody: func() string {
-				body := platformResponse(
+				body := tagResponse(
 					http.StatusOK,
-					"success update platform",
-					&platform.Platform{
+					"success update tag",
+					&tag.Tag{
 						ID:          3,
 						Name:        "OK",
 						Description: "OKです",
@@ -895,10 +895,10 @@ func Test_platformHandler_update(t *testing.T) {
 			}(),
 		},
 		{
-			name: "new platform NG",
+			name: "new tag NG",
 			fields: fields{
 				server: &server{
-					Platform: &platform.Platform{
+					Tag: &tag.Tag{
 						ID:          3,
 						Name:        "OK",
 						Description: "OKです",
@@ -912,7 +912,7 @@ func Test_platformHandler_update(t *testing.T) {
 				url:    "http://example.com/3",
 				body:   strings.NewReader(`{"name": "OK", "description": "OKです",}`),
 				pathParam: map[string]string{
-					"platformID": "3",
+					"tagID": "3",
 				},
 			},
 			wantStatusCode: http.StatusBadRequest,
@@ -922,7 +922,7 @@ func Test_platformHandler_update(t *testing.T) {
 			name: "update err",
 			fields: fields{
 				server: &server{
-					Platform: &platform.Platform{
+					Tag: &tag.Tag{
 						ID:          3,
 						Name:        "OK",
 						Description: "OKです",
@@ -937,7 +937,7 @@ func Test_platformHandler_update(t *testing.T) {
 				url:    "http://example.com/3",
 				body:   strings.NewReader(`{"name": "OK", "description": "OKです"}`),
 				pathParam: map[string]string{
-					"platformID": "3",
+					"tagID": "3",
 				},
 			},
 			wantStatusCode: http.StatusUnsupportedMediaType,
@@ -946,7 +946,7 @@ func Test_platformHandler_update(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			h := &platformHandler{
+			h := &tagHandler{
 				server: tt.fields.server,
 			}
 			ctx := chi.NewRouteContext()
@@ -967,9 +967,9 @@ func Test_platformHandler_update(t *testing.T) {
 	}
 }
 
-func Test_platformHandler_delete(t *testing.T) {
+func Test_tagHandler_delete(t *testing.T) {
 	type fields struct {
-		server platform.Server
+		server tag.Server
 	}
 	type args struct {
 		w         *httptest.ResponseRecorder
@@ -989,7 +989,7 @@ func Test_platformHandler_delete(t *testing.T) {
 			name: "OK",
 			fields: fields{
 				server: &server{
-					Platform: &platform.Platform{
+					Tag: &tag.Tag{
 						ID:          4,
 						Name:        "OK",
 						Description: "OKです",
@@ -1003,12 +1003,12 @@ func Test_platformHandler_delete(t *testing.T) {
 				url:    "http://example.com/4",
 				body:   strings.NewReader(`{"name": "OK", "description": "OKです"}`),
 				pathParam: map[string]string{
-					"platformID": "4",
+					"tagID": "4",
 				},
 			},
 			wantStatusCode: http.StatusOK,
 			wantBody: func() string {
-				body := deletePlatformResponse(4)
+				body := deleteTagResponse(4)
 				str, _ := json.Marshal(body)
 				return string(str)
 			}(),
@@ -1017,7 +1017,7 @@ func Test_platformHandler_delete(t *testing.T) {
 			name: "new id err",
 			fields: fields{
 				server: &server{
-					Platform: &platform.Platform{
+					Tag: &tag.Tag{
 						ID:          4,
 						Name:        "OK",
 						Description: "OKです",
@@ -1031,7 +1031,7 @@ func Test_platformHandler_delete(t *testing.T) {
 				url:    "http://example.com/aaaa",
 				body:   strings.NewReader(`{"name": "OK", "description": "OKです"}`),
 				pathParam: map[string]string{
-					"platformID": "aaaa",
+					"tagID": "aaaa",
 				},
 			},
 			wantStatusCode: http.StatusBadRequest,
@@ -1041,7 +1041,7 @@ func Test_platformHandler_delete(t *testing.T) {
 			name: "delete err",
 			fields: fields{
 				server: &server{
-					Platform: &platform.Platform{
+					Tag: &tag.Tag{
 						ID:          1,
 						Name:        "OK",
 						Description: "OKです",
@@ -1056,7 +1056,7 @@ func Test_platformHandler_delete(t *testing.T) {
 				url:    "http://example.com/1",
 				body:   strings.NewReader(`{"name": "OK", "description": "OKです"}`),
 				pathParam: map[string]string{
-					"platformID": "1",
+					"tagID": "1",
 				},
 			},
 			wantStatusCode: http.StatusUnauthorized,
@@ -1065,7 +1065,7 @@ func Test_platformHandler_delete(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			h := &platformHandler{
+			h := &tagHandler{
 				server: tt.fields.server,
 			}
 			ctx := chi.NewRouteContext()
