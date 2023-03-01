@@ -1,21 +1,21 @@
-package game
+package tag
 
 import (
 	"log"
-	"mysrtafes-backend/http-handle/v1/errors"
-	"mysrtafes-backend/pkg/game"
+	"mysrtafes-backend/handle/http/v1/errors"
+	"mysrtafes-backend/pkg/game/tag"
 	"net/http"
 )
 
-type gameHandler struct {
-	server game.Server
+type tagHandler struct {
+	server tag.Server
 }
 
-func NewGameHandler(s game.Server) *gameHandler {
-	return &gameHandler{s}
+func NewTagHandler(s tag.Server) *tagHandler {
+	return &tagHandler{s}
 }
 
-func (h *gameHandler) HandleGame(w http.ResponseWriter, r *http.Request) {
+func (h *tagHandler) HandleTag(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
 		h.read(w, r)
@@ -30,7 +30,7 @@ func (h *gameHandler) HandleGame(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *gameHandler) HandleGameForMultiple(w http.ResponseWriter, r *http.Request) {
+func (h *tagHandler) HandleTagForMultiple(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
 		h.find(w, r)
@@ -43,8 +43,8 @@ func (h *gameHandler) HandleGameForMultiple(w http.ResponseWriter, r *http.Reque
 	}
 }
 
-func (h *gameHandler) create(w http.ResponseWriter, r *http.Request) {
-	game, platformIDs, tagIDs, err := NewGameCreate(r)
+func (h *tagHandler) create(w http.ResponseWriter, r *http.Request) {
+	tag, err := NewTagCreate(r)
 	if err != nil {
 		// TODO: logの改善(トレーサーなど)
 		log.Println(err)
@@ -52,84 +52,84 @@ func (h *gameHandler) create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	game, err = h.server.Create(game, platformIDs, tagIDs)
+	tag, err = h.server.Create(tag)
 	if err != nil {
 		log.Println(err)
 		errors.WriteError(w, err)
 		return
 	}
 
-	WriteCreateGame(w, game)
+	WriteCreateTag(w, tag)
 }
 
-func (h *gameHandler) read(w http.ResponseWriter, r *http.Request) {
-	gameID, err := NewGameID(r)
+func (h *tagHandler) read(w http.ResponseWriter, r *http.Request) {
+	tagID, err := NewTagID(r)
 	if err != nil {
 		log.Println(err)
 		errors.WriteError(w, err)
 		return
 	}
 
-	game, err := h.server.Read(gameID)
+	tag, err := h.server.Read(tagID)
 	if err != nil {
 		log.Println(err)
 		errors.WriteError(w, err)
 		return
 	}
 
-	WriteReadGame(w, game)
+	WriteReadTag(w, tag)
 }
 
-func (h *gameHandler) find(w http.ResponseWriter, r *http.Request) {
-	findOption, err := NewGameFindOption(r)
+func (h *tagHandler) find(w http.ResponseWriter, r *http.Request) {
+	findOption, err := NewTagFindOption(r)
 	if err != nil {
 		log.Println(err)
 		errors.WriteError(w, err)
 		return
 	}
 
-	games, err := h.server.Find(findOption)
+	tags, err := h.server.Find(findOption)
 	if err != nil {
 		log.Println(err)
 		errors.WriteError(w, err)
 		return
 	}
 
-	WriteFindGame(w, games, findOption)
+	WriteFindTag(w, tags, findOption)
 }
 
-func (h *gameHandler) update(w http.ResponseWriter, r *http.Request) {
-	game, platformIDs, tagIDs, err := NewGameUpdate(r)
+func (h *tagHandler) update(w http.ResponseWriter, r *http.Request) {
+	tag, err := NewTagUpdate(r)
 	if err != nil {
 		log.Println(err)
 		errors.WriteError(w, err)
 		return
 	}
 
-	game, err = h.server.Update(game, platformIDs, tagIDs)
+	tag, err = h.server.Update(tag)
 	if err != nil {
 		log.Println(err)
 		errors.WriteError(w, err)
 		return
 	}
 
-	WriteUpdateGame(w, game)
+	WriteUpdateTag(w, tag)
 }
 
-func (h *gameHandler) delete(w http.ResponseWriter, r *http.Request) {
-	gameID, err := NewGameID(r)
+func (h *tagHandler) delete(w http.ResponseWriter, r *http.Request) {
+	tagID, err := NewTagID(r)
 	if err != nil {
 		log.Println(err)
 		errors.WriteError(w, err)
 		return
 	}
 
-	err = h.server.Delete(gameID)
+	err = h.server.Delete(tagID)
 	if err != nil {
 		log.Println(err)
 		errors.WriteError(w, err)
 		return
 	}
 
-	WriteDeleteGame(w, gameID)
+	WriteDeleteTag(w, tagID)
 }

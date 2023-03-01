@@ -2,7 +2,7 @@ package challenge
 
 import (
 	"log"
-	"mysrtafes-backend/http-handle/v1/errors"
+	"mysrtafes-backend/handle/http/v1/errors"
 	"mysrtafes-backend/pkg/challenge"
 	"net/http"
 )

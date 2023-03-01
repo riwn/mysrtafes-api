@@ -2,7 +2,7 @@ package platform
 
 import (
 	"log"
-	"mysrtafes-backend/http-handle/v1/errors"
+	"mysrtafes-backend/handle/http/v1/errors"
 	"mysrtafes-backend/pkg/game/platform"
 	"net/http"
 )

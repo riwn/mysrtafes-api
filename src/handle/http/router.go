@@ -1,10 +1,10 @@
 package handle
 
 import (
-	v1Game "mysrtafes-backend/http-handle/v1/game"
-	v1Platform "mysrtafes-backend/http-handle/v1/game/platform"
-	v1Tag "mysrtafes-backend/http-handle/v1/game/tag"
-	v1Challenge "mysrtafes-backend/http-handle/v1/mystery-challenge2/challenge"
+	v1Game "mysrtafes-backend/handle/http/v1/game"
+	v1Platform "mysrtafes-backend/handle/http/v1/game/platform"
+	v1Tag "mysrtafes-backend/handle/http/v1/game/tag"
+	v1Challenge "mysrtafes-backend/handle/http/v1/mystery-challenge2/challenge"
 	"mysrtafes-backend/pkg/challenge"
 	"mysrtafes-backend/pkg/game"
 	"mysrtafes-backend/pkg/game/platform"

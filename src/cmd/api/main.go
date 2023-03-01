@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
-	handle "mysrtafes-backend/http-handle"
+	handle "mysrtafes-backend/handle/http"
 	"mysrtafes-backend/pkg/challenge"
 	"mysrtafes-backend/pkg/game"
 	"mysrtafes-backend/pkg/game/platform"
