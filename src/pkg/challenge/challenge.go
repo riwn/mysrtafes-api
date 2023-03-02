@@ -3,12 +3,21 @@ package challenge
 import (
 	"mysrtafes-backend/pkg/challenge/detail"
 	"mysrtafes-backend/pkg/challenge/stream"
+	"mysrtafes-backend/pkg/errors"
 	"net/url"
 	"regexp"
+	"strings"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 // ChallengeID
 type ID uint64
+
+// id > 0
+func (i ID) Valid() bool {
+	return i > 0
+}
 
 // 応募者名
 type Name string
@@ -24,6 +33,8 @@ func (r ReadingName) Valid() bool {
 	return len(r) > 0 && len(r) < 256
 }
 
+const PasswordCryptCost = 10
+
 // パスワード
 type Password string
 
@@ -34,6 +45,18 @@ func (p Password) Valid() bool {
 
 func (p Password) String() string {
 	return "****"
+}
+
+func (p Password) Hash() (Password, error) {
+	hashPassword, err := bcrypt.GenerateFromPassword([]byte(p), PasswordCryptCost)
+	if err != nil {
+		return "", err
+	}
+	return Password(hashPassword), nil
+}
+
+func (p Password) Check(password Password) error {
+	return bcrypt.CompareHashAndPassword([]byte(p), []byte(password))
 }
 
 // 応募者情報
@@ -57,8 +80,22 @@ func NewURL(us string) (URL, error) {
 	return URL(*u), nil
 }
 
-func (u URL) URL() url.URL {
-	return url.URL(u)
+func (u URL) URL() *url.URL {
+	url := url.URL(u)
+	return &url
+}
+
+func (u URL) StreamSite() StreamSite {
+	switch {
+	case strings.Contains(u.URL().String(), "nicovideo"):
+		return StreamStatus_Niconico
+	case strings.Contains(u.URL().String(), "youtube"):
+		return StreamStatus_YouTube
+	case strings.Contains(u.URL().String(), "twitch"):
+		return StreamStatus_Twitch
+	default:
+		return StreamStatus_Unknown
+	}
 }
 
 // 配信データ
@@ -66,6 +103,30 @@ type Stream struct {
 	IsStream IsStream
 	URL      URL
 	Status   *stream.Status
+}
+
+// 配信サイト
+type StreamSite uint16
+
+const (
+	_ StreamSite = iota
+	StreamStatus_Niconico
+	StreamStatus_YouTube
+	StreamStatus_Twitch
+	StreamStatus_Unknown
+)
+
+func (s StreamSite) String() string {
+	switch s {
+	case StreamStatus_Niconico:
+		return "ニコニコ生放送"
+	case StreamStatus_YouTube:
+		return "YouTube"
+	case StreamStatus_Twitch:
+		return "Twitch"
+	default:
+		return ""
+	}
 }
 
 // DiscordID
@@ -146,4 +207,108 @@ func New(name Name, readingName ReadingName, password Password, twitter Twitter,
 		Comment: comment,
 		Detail:  details,
 	}
+}
+
+func (c *Challenge) ValidCreate() error {
+	// NameのValidate
+	if !c.Challenger.Name.Valid() {
+		return errors.NewInvalidRequest(
+			errors.Layer_Domain,
+			errors.NewInformation(
+				errors.ID_InvalidParams,
+				"",
+				[]errors.InvalidParams{
+					errors.NewInvalidParams("name", c.Challenger.Name),
+				},
+			),
+			"Name Valid error",
+		)
+	}
+	// ReadingNameのValidate
+	if !c.Challenger.ReadingName.Valid() {
+		return errors.NewInvalidRequest(
+			errors.Layer_Domain,
+			errors.NewInformation(
+				errors.ID_InvalidParams,
+				"",
+				[]errors.InvalidParams{
+					errors.NewInvalidParams("name_read", c.Challenger.ReadingName),
+				},
+			),
+			"ReadingName Valid error",
+		)
+	}
+
+	// PasswordのValidate
+	if !c.Challenger.Password.Valid() {
+		return errors.NewInvalidRequest(
+			errors.Layer_Domain,
+			errors.NewInformation(
+				errors.ID_InvalidParams,
+				"",
+				[]errors.InvalidParams{
+					errors.NewInvalidParams("password", c.Challenger.Password.String()),
+				},
+			),
+			"Password Valid error",
+		)
+	}
+
+	// SNSのValidate
+	if !c.SNS.Valid() {
+		return errors.NewInvalidRequest(
+			errors.Layer_Domain,
+			errors.NewInformation(
+				errors.ID_InvalidParams,
+				"",
+				[]errors.InvalidParams{
+					errors.NewInvalidParams("discord", c.SNS.Discord),
+					errors.NewInvalidParams("twitter", c.SNS.Twitter),
+				},
+			),
+			"SNS Valid error",
+		)
+	}
+
+	// CommentのValidate
+	if !c.Comment.Valid() {
+		return errors.NewInvalidRequest(
+			errors.Layer_Domain,
+			errors.NewInformation(
+				errors.ID_InvalidParams,
+				"",
+				[]errors.InvalidParams{
+					errors.NewInvalidParams("comment", c.Comment),
+				},
+			),
+			"Comment Valid error",
+		)
+	}
+
+	// TODO: DetailのValidate
+	return nil
+}
+
+func (c *Challenge) ValidUpdate() error {
+	// IDのValidate
+	if !c.ID.Valid() {
+		return errors.NewInvalidRequest(
+			errors.Layer_Domain,
+			errors.NewInformation(
+				errors.ID_InvalidParams,
+				"",
+				[]errors.InvalidParams{
+					errors.NewInvalidParams("id", c.ID),
+				},
+			),
+			"ID Valid error",
+		)
+	}
+
+	// Createと同じValidateを流す
+	if err := c.ValidCreate(); err != nil {
+		return err
+	}
+
+	return nil
 }
