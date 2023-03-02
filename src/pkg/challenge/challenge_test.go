@@ -135,7 +135,7 @@ func TestURL変換(t *testing.T) {
 	tests := []struct {
 		name string
 		u    URL
-		want url.URL
+		want *url.URL
 	}{
 		{
 			name: "変換",
@@ -147,13 +147,13 @@ func TestURL変換(t *testing.T) {
 				}
 				return URL(*exampleURL)
 			}(),
-			want: func() url.URL {
+			want: func() *url.URL {
 				uri := "http://example.com"
 				exampleURL, err := url.Parse(uri)
 				if err != nil {
 					panic(err)
 				}
-				return *exampleURL
+				return exampleURL
 			}(),
 		},
 	}
@@ -432,6 +432,32 @@ func TestNewURL(t *testing.T) {
 			}
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("NewURL() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestID_Valid(t *testing.T) {
+	tests := []struct {
+		name string
+		i    ID
+		want bool
+	}{
+		{
+			name: "ok",
+			i:    1,
+			want: true,
+		},
+		{
+			name: "ng",
+			i:    0,
+			want: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.i.Valid(); got != tt.want {
+				t.Errorf("ID.Valid() = %v, want %v", got, tt.want)
 			}
 		})
 	}

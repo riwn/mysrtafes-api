@@ -33,9 +33,7 @@ type Detail struct {
 func NewChallengeCreate(r *http.Request) (*challenge.Challenge, error) {
 	defer r.Body.Close()
 
-	body := struct {
-		Challenge
-	}{}
+	body := Challenge{}
 	err := json.NewDecoder(r.Body).Decode(&body)
 	if err != nil {
 		return nil, errors.NewInvalidRequest(
@@ -48,9 +46,24 @@ func NewChallengeCreate(r *http.Request) (*challenge.Challenge, error) {
 			"json decode error. bad format request",
 		)
 	}
+
+	if len(body.Details) == 0 {
+		return nil, errors.NewInvalidRequest(
+			errors.Layer_Request,
+			errors.NewInformation(
+				errors.ID_InvalidParams,
+				err.Error(),
+				[]errors.InvalidParams{
+					errors.NewInvalidParams("detail", body.Details),
+				},
+			),
+			"detail nothing error",
+		)
+	}
+
 	// Detailの生成
-	var details []*detail.Detail
-	for _, bodyDetail := range body.Challenge.Details {
+	details := make([]*detail.Detail, 0, len(body.Details))
+	for _, bodyDetail := range body.Details {
 		details = append(
 			details,
 			detail.New(
@@ -63,7 +76,7 @@ func NewChallengeCreate(r *http.Request) (*challenge.Challenge, error) {
 		)
 	}
 
-	url, err := challenge.NewURL(body.Challenge.URL)
+	url, err := challenge.NewURL(body.URL)
 	if err != nil {
 		return nil, errors.NewInvalidRequest(
 			errors.Layer_Request,
@@ -71,7 +84,7 @@ func NewChallengeCreate(r *http.Request) (*challenge.Challenge, error) {
 				errors.ID_InvalidParams,
 				err.Error(),
 				[]errors.InvalidParams{
-					errors.NewInvalidParams("url", body.Challenge.URL),
+					errors.NewInvalidParams("url", body.URL),
 				},
 			),
 			"url create error",
@@ -79,14 +92,14 @@ func NewChallengeCreate(r *http.Request) (*challenge.Challenge, error) {
 	}
 
 	return challenge.New(
-		body.Challenge.Name,
-		body.Challenge.ReadingName,
-		body.Challenge.Password,
-		body.Challenge.Twitter,
-		body.Challenge.Discord,
-		body.Challenge.IsStream,
+		body.Name,
+		body.ReadingName,
+		body.Password,
+		body.Twitter,
+		body.Discord,
+		body.IsStream,
 		url,
-		body.Challenge.Comment,
+		body.Comment,
 		details,
 	), nil
 }

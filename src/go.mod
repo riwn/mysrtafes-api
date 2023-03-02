@@ -5,6 +5,7 @@ go 1.20
 require (
 	github.com/go-chi/chi/v5 v5.0.8
 	github.com/stretchr/testify v1.8.1
+	golang.org/x/crypto v0.6.0
 	gorm.io/driver/mysql v1.4.5
 	gorm.io/gorm v1.24.5
 )

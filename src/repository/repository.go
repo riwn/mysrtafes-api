@@ -32,8 +32,22 @@ func New(db *gorm.DB) Repository {
 	return &repository{db}
 }
 
-func (r *repository) ChallengeCreate(*challenge.Challenge) (*challenge.Challenge, error) {
-	return nil, errors.New("not implemented ChallengeCreate")
+func (r *repository) ChallengeCreate(c *challenge.Challenge) (*challenge.Challenge, error) {
+	model, err := mysrtafes_backend.NewMysChallenge2Challenges(c)
+	if err != nil {
+		return nil, err
+	}
+	err = r.DB.Transaction(func(tx *gorm.DB) error {
+		err := model.Create(tx)
+		if err != nil {
+			return err
+		}
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	return model.NewEntity()
 }
 
 func (r *repository) ChallengeRead(challenge.ID) (*challenge.Challenge, error) {

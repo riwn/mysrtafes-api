@@ -76,7 +76,7 @@ type ChallengeResponse struct {
 	Twitter          challenges.Twitter     `json:"twitter"`
 	Discord          challenges.Discord     `json:"discord"`
 	IsStream         challenges.IsStream    `json:"is_stream"`
-	StreamURL        challenges.URL         `json:"stream_url"`
+	StreamURL        string                 `json:"stream_url"`
 	Comment          challenges.Comment     `json:"comment"`
 	StreamStatus     *StreamStatusResponse  `json:"stream_status"`
 	StreamSite       string                 `json:"stream_site"`
@@ -101,17 +101,7 @@ func WriteCreateChallenge(w http.ResponseWriter, challenge *challenges.Challenge
 }
 
 func createChallengeResponse(challenge *challenges.Challenge) ChallengeResponse {
-	data := ChallengeResponse{
-		ID:        challenge.ID,
-		Name:      challenge.Challenger.Name,
-		NameRead:  challenge.Challenger.ReadingName,
-		Twitter:   challenge.SNS.Twitter,
-		Discord:   challenge.SNS.Discord,
-		IsStream:  challenge.Stream.IsStream,
-		StreamURL: challenge.Stream.URL,
-		Comment:   challenge.Comment,
-	}
-
+	details := make([]DetailResponse, 0, len(challenge.Detail))
 	for _, detailData := range challenge.Detail {
 		detail := DetailResponse{
 			ID:           detailData.ID,
@@ -130,11 +120,12 @@ func createChallengeResponse(challenge *challenges.Challenge) ChallengeResponse 
 				},
 			)
 		}
-		data.ChallengeDetails = append(data.ChallengeDetails, detail)
+		details = append(details, detail)
 	}
 
+	var streamStatus *StreamStatusResponse
 	if challenge.Stream.Status != nil {
-		data.StreamStatus = &StreamStatusResponse{
+		streamStatus = &StreamStatusResponse{
 			ID:            challenge.Stream.Status.ID,
 			ChallengeID:   challenge.ID,
 			IsLive:        challenge.Stream.Status.IsLive,
@@ -144,5 +135,17 @@ func createChallengeResponse(challenge *challenges.Challenge) ChallengeResponse 
 			Thumbnail:     challenge.Stream.Status.Detail.Thumbnail,
 		}
 	}
-	return data
+	return ChallengeResponse{
+		ID:               challenge.ID,
+		Name:             challenge.Challenger.Name,
+		NameRead:         challenge.Challenger.ReadingName,
+		Twitter:          challenge.SNS.Twitter,
+		Discord:          challenge.SNS.Discord,
+		IsStream:         challenge.Stream.IsStream,
+		StreamURL:        challenge.Stream.URL.URL().String(),
+		Comment:          challenge.Comment,
+		StreamStatus:     streamStatus,
+		StreamSite:       challenge.Stream.URL.StreamSite().String(),
+		ChallengeDetails: details,
+	}
 }
