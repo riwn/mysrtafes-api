@@ -47,5 +47,18 @@ func (h *challengeHandler) create(w http.ResponseWriter, r *http.Request) {
 	}
 }
 func (h *challengeHandler) read(w http.ResponseWriter, r *http.Request) {
-	http.NotFound(w, r)
+	challengeID, err := NewChallengeID(r)
+	if err != nil {
+		log.Println(err)
+		errors.WriteError(w, err)
+		return
+	}
+
+	challenge, err := h.server.Read(challengeID)
+	if err != nil {
+		log.Println(err)
+		errors.WriteError(w, err)
+		return
+	}
+	WriteReadChallenge(w, challenge)
 }

@@ -33,12 +33,16 @@ func New(db *gorm.DB) Repository {
 }
 
 func (r *repository) ChallengeCreate(c *challenge.Challenge) (*challenge.Challenge, error) {
-	model, err := mysrtafes_backend.NewMysChallenge2Challenges(c)
+	challenge, err := mysrtafes_backend.NewMysChallenge2Challenges(c)
 	if err != nil {
 		return nil, err
 	}
+	// TODO: GoalGenre紐付けのInsert
 	err = r.DB.Transaction(func(tx *gorm.DB) error {
-		err := model.Create(tx)
+		err := challenge.Create(tx)
+		if err != nil {
+			return err
+		}
 		if err != nil {
 			return err
 		}
@@ -47,11 +51,16 @@ func (r *repository) ChallengeCreate(c *challenge.Challenge) (*challenge.Challen
 	if err != nil {
 		return nil, err
 	}
-	return model.NewEntity()
+	return challenge.NewEntity()
 }
 
-func (r *repository) ChallengeRead(challenge.ID) (*challenge.Challenge, error) {
-	return nil, errors.New("not implemented ChallengeRead")
+func (r *repository) ChallengeRead(id challenge.ID) (*challenge.Challenge, error) {
+	challenge := mysrtafes_backend.NewNewMysChallenge2ChallengesFromID(id)
+	if err := challenge.Read(r.DB); err != nil {
+		return nil, err
+	}
+
+	return challenge.NewEntity()
 }
 
 func (r *repository) ChallengeUpdate(*challenge.Challenge) (*challenge.Challenge, error) {
@@ -83,11 +92,7 @@ func (r *repository) TagRead(tagID tag.ID) (*tag.Tag, error) {
 func (r *repository) TagFind(f *tag.FindOption) ([]*tag.Tag, error) {
 	models := mysrtafes_backend.NewTagMasters()
 	err := models.Find(r.DB, f)
-	entities := make([]*tag.Tag, 0, len(models))
-	for _, model := range models {
-		entities = append(entities, model.NewEntity())
-	}
-	return entities, err
+	return models.NewEntities(), err
 }
 
 func (r *repository) TagUpdate(tag *tag.Tag) (*tag.Tag, error) {
@@ -128,11 +133,7 @@ func (r *repository) PlatformRead(platformID platform.ID) (*platform.Platform, e
 func (r *repository) PlatformFind(p *platform.FindOption) ([]*platform.Platform, error) {
 	models := mysrtafes_backend.NewPlatformMasters()
 	err := models.Find(r.DB, p)
-	entities := make([]*platform.Platform, 0, len(models))
-	for _, model := range models {
-		entities = append(entities, model.NewEntity())
-	}
-	return entities, err
+	return models.NewEntities(), err
 }
 
 func (r *repository) PlatformUpdate(platform *platform.Platform) (*platform.Platform, error) {
@@ -184,15 +185,7 @@ func (r *repository) GameFind(f *game.FindOption) ([]*game.Game, error) {
 	if err != nil {
 		return nil, err
 	}
-	entities := make([]*game.Game, 0, len(models))
-	for _, model := range models {
-		game, err := model.NewEntity()
-		if err != nil {
-			return nil, err
-		}
-		entities = append(entities, game)
-	}
-	return entities, nil
+	return models.NewEntities()
 }
 
 func (r *repository) GameUpdate(game *game.Game, platformIDs []platform.ID, tagIDs []tag.ID) (*game.Game, error) {

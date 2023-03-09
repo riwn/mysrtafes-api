@@ -48,15 +48,14 @@ type GoalResponse struct {
 	UpdatedAt   time.Time        `json:"updated_at"`
 }
 type DetailResponse struct {
-	ID           detail.ID         `json:"id"`
-	GameMasterID game.ID           `json:"game_master_id"`
-	GameName     game.Name         `json:"game_name"`
-	Game         GameResponse      `json:"game"`
-	Goals        []GoalResponse    `json:"goal_genres"`
-	GoalDetail   detail.GoalDetail `json:"goal_detail"`
-	Department   detail.Department `json:"department"`
-	CreatedAt    time.Time         `json:"created_at"`
-	UpdatedAt    time.Time         `json:"updated_at"`
+	ID         detail.ID         `json:"id"`
+	GameName   game.Name         `json:"game_name"`
+	Game       GameResponse      `json:"game"`
+	Goals      []GoalResponse    `json:"goal_genres"`
+	GoalDetail detail.GoalDetail `json:"goal_detail"`
+	Department string            `json:"department"`
+	CreatedAt  time.Time         `json:"created_at"`
+	UpdatedAt  time.Time         `json:"updated_at"`
 }
 type StreamStatusResponse struct {
 	ID            stream.ID            `json:"id"`
@@ -69,7 +68,7 @@ type StreamStatusResponse struct {
 	CreatedAt     time.Time            `json:"created_at"`
 	UpdatedAt     time.Time            `json:"updated_at"`
 }
-type ChallengeResponse struct {
+type Challenge struct {
 	ID               challenges.ID          `json:"id"`
 	Name             challenges.Name        `json:"name"`
 	NameRead         challenges.ReadingName `json:"name_read"`
@@ -85,30 +84,46 @@ type ChallengeResponse struct {
 	UpdatedAt        time.Time              `json:"updated_at"`
 }
 
-func WriteCreateChallenge(w http.ResponseWriter, challenge *challenges.Challenge) error {
-	body := struct {
-		Code    int               `json:"code"`
-		Message string            `json:"message"`
-		Data    ChallengeResponse `json:"data"`
-	}{
-		Code:    http.StatusCreated,
-		Message: "success create challenge",
-		Data:    createChallengeResponse(challenge),
-	}
+type ChallengeResponse struct {
+	Code    int       `json:"code"`
+	Message string    `json:"message"`
+	Data    Challenge `json:"data"`
+}
+
+func WriteReadChallenge(w http.ResponseWriter, challenge *challenges.Challenge) error {
+	body := challengeResponse(http.StatusOK, "success read challenge", challenge)
 
 	w.Header().Set("Content-Type", "application/json")
 	return json.NewEncoder(w).Encode(&body)
 }
 
-func createChallengeResponse(challenge *challenges.Challenge) ChallengeResponse {
-	details := make([]DetailResponse, 0, len(challenge.Detail))
-	for _, detailData := range challenge.Detail {
+func WriteCreateChallenge(w http.ResponseWriter, challenge *challenges.Challenge) error {
+	body := challengeResponse(http.StatusCreated, "success create challenge", challenge)
+
+	w.Header().Set("Content-Type", "application/json")
+	return json.NewEncoder(w).Encode(&body)
+}
+
+func challengeResponse(statusCode int, msg string, challenge *challenges.Challenge) interface{} {
+	details := make([]DetailResponse, 0, len(challenge.Details))
+	for _, detailData := range challenge.Details {
 		detail := DetailResponse{
-			ID:           detailData.ID,
-			GameMasterID: detailData.Game.ID,
-			GameName:     detailData.Game.Name,
-			GoalDetail:   detailData.GoalDetail,
-			Department:   detailData.Department,
+			ID:       detailData.ID,
+			GameName: detailData.Game.Name,
+			Game: GameResponse{
+				ID:          detailData.Game.ID,
+				Name:        detailData.Game.Name,
+				Description: detailData.Game.Description,
+				Publisher:   detailData.Game.Publisher,
+				Developer:   detailData.Game.Developer,
+				// TODO: platforms, tags, links
+				CreatedAt: detailData.Game.CreatedAt,
+				UpdatedAt: detailData.Game.UpdatedAt,
+			},
+			GoalDetail: detailData.GoalDetail,
+			Department: detailData.Department.String(),
+			CreatedAt:  detailData.CreatedAt,
+			UpdatedAt:  detailData.UpdatedAt,
 		}
 		for _, goalData := range detailData.Goals {
 			detail.Goals = append(
@@ -135,17 +150,23 @@ func createChallengeResponse(challenge *challenges.Challenge) ChallengeResponse 
 			Thumbnail:     challenge.Stream.Status.Detail.Thumbnail,
 		}
 	}
-	return ChallengeResponse{
-		ID:               challenge.ID,
-		Name:             challenge.Challenger.Name,
-		NameRead:         challenge.Challenger.ReadingName,
-		Twitter:          challenge.SNS.Twitter,
-		Discord:          challenge.SNS.Discord,
-		IsStream:         challenge.Stream.IsStream,
-		StreamURL:        challenge.Stream.URL.URL().String(),
-		Comment:          challenge.Comment,
-		StreamStatus:     streamStatus,
-		StreamSite:       challenge.Stream.URL.StreamSite().String(),
-		ChallengeDetails: details,
+	return &ChallengeResponse{
+		Code:    statusCode,
+		Message: msg,
+		Data: Challenge{
+			ID:               challenge.ID,
+			Name:             challenge.Challenger.Name,
+			NameRead:         challenge.Challenger.ReadingName,
+			Twitter:          challenge.SNS.Twitter,
+			Discord:          challenge.SNS.Discord,
+			IsStream:         challenge.Stream.IsStream,
+			StreamURL:        challenge.Stream.URL.URL().String(),
+			Comment:          challenge.Comment,
+			StreamStatus:     streamStatus,
+			StreamSite:       challenge.Stream.URL.StreamSite().String(),
+			ChallengeDetails: details,
+			CreatedAt:        challenge.CreatedAt,
+			UpdatedAt:        challenge.UpdatedAt,
+		},
 	}
 }

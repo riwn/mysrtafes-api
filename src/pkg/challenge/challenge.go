@@ -7,6 +7,7 @@ import (
 	"net/url"
 	"regexp"
 	"strings"
+	"time"
 
 	"golang.org/x/crypto/bcrypt"
 )
@@ -183,10 +184,12 @@ func (n Comment) Valid() bool {
 type Challenge struct {
 	ID         ID
 	Challenger Challenger
-	Detail     []*detail.Detail
+	Details    []*detail.Detail
 	Stream     Stream
 	SNS        SNS
 	Comment    Comment
+	CreatedAt  time.Time
+	UpdatedAt  time.Time
 }
 
 func New(name Name, readingName ReadingName, password Password, twitter Twitter, discord Discord, isStream IsStream, url URL, comment Comment, details []*detail.Detail) *Challenge {
@@ -205,7 +208,7 @@ func New(name Name, readingName ReadingName, password Password, twitter Twitter,
 			Twitter: twitter,
 		},
 		Comment: comment,
-		Detail:  details,
+		Details: details,
 	}
 }
 
@@ -285,7 +288,27 @@ func (c *Challenge) ValidCreate() error {
 		)
 	}
 
-	// TODO: DetailのValidate
+	// detailがないときはエラー
+	if len(c.Details) == 0 {
+		return errors.NewInvalidRequest(
+			errors.Layer_Domain,
+			errors.NewInformation(
+				errors.ID_InvalidParams,
+				"",
+				[]errors.InvalidParams{
+					errors.NewInvalidParams("details count", len(c.Details)),
+				},
+			),
+			"Nothing Detail Error",
+		)
+	}
+
+	// detailsのValid
+	for _, detail := range c.Details {
+		if err := detail.ValidCreate(); err != nil {
+			return err
+		}
+	}
 	return nil
 }
 

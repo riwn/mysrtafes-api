@@ -8,9 +8,12 @@ import (
 	"mysrtafes-backend/pkg/errors"
 	"mysrtafes-backend/pkg/game"
 	"net/http"
+	"strconv"
+
+	"github.com/go-chi/chi/v5"
 )
 
-type Challenge struct {
+type ChallengeRequest struct {
 	Name        challenge.Name        `json:"name"`
 	ReadingName challenge.ReadingName `json:"name_read"`
 	Password    challenge.Password    `json:"password"`
@@ -33,7 +36,7 @@ type Detail struct {
 func NewChallengeCreate(r *http.Request) (*challenge.Challenge, error) {
 	defer r.Body.Close()
 
-	body := Challenge{}
+	body := ChallengeRequest{}
 	err := json.NewDecoder(r.Body).Decode(&body)
 	if err != nil {
 		return nil, errors.NewInvalidRequest(
@@ -47,20 +50,6 @@ func NewChallengeCreate(r *http.Request) (*challenge.Challenge, error) {
 		)
 	}
 
-	if len(body.Details) == 0 {
-		return nil, errors.NewInvalidRequest(
-			errors.Layer_Request,
-			errors.NewInformation(
-				errors.ID_InvalidParams,
-				err.Error(),
-				[]errors.InvalidParams{
-					errors.NewInvalidParams("detail", body.Details),
-				},
-			),
-			"detail nothing error",
-		)
-	}
-
 	// Detailの生成
 	details := make([]*detail.Detail, 0, len(body.Details))
 	for _, bodyDetail := range body.Details {
@@ -71,7 +60,7 @@ func NewChallengeCreate(r *http.Request) (*challenge.Challenge, error) {
 				bodyDetail.GameName,
 				bodyDetail.GoalIDs,
 				bodyDetail.GoalDetail,
-				bodyDetail.Department,
+				newDepartment(bodyDetail.Department),
 			),
 		)
 	}
@@ -102,4 +91,36 @@ func NewChallengeCreate(r *http.Request) (*challenge.Challenge, error) {
 		body.Comment,
 		details,
 	), nil
+}
+
+func NewChallengeID(r *http.Request) (challenge.ID, error) {
+	challengeIDStr := chi.URLParam(r, "challengeID")
+
+	challengeID, err := strconv.Atoi(challengeIDStr)
+	if err != nil {
+		return 0, errors.NewInvalidRequest(
+			errors.Layer_Request,
+			errors.NewInformation(
+				errors.ID_InvalidParams,
+				err.Error(),
+				[]errors.InvalidParams{
+					errors.NewInvalidParams("challengeID", challengeIDStr),
+				},
+			),
+			"challengeID convert error",
+		)
+	}
+	return challenge.ID(challengeID), nil
+}
+
+// req -> domainの値変換
+func newDepartment(req detail.Department) detail.Department {
+	switch req {
+	case 1:
+		return detail.Department_BEGINNER
+	case 2:
+		return detail.Department_EXPERT
+	default:
+		return detail.Department_MAX
+	}
 }

@@ -3,7 +3,9 @@ package detail
 import (
 	"mysrtafes-backend/pkg/challenge/detail/goal"
 	"mysrtafes-backend/pkg/challenge/detail/result"
+	"mysrtafes-backend/pkg/errors"
 	"mysrtafes-backend/pkg/game"
+	"time"
 )
 
 // DetailID
@@ -47,6 +49,8 @@ type Detail struct {
 	GoalDetail GoalDetail
 	Department Department
 	Result     *result.Result
+	CreatedAt  time.Time
+	UpdatedAt  time.Time
 }
 
 func New(gameID game.ID, gameName game.Name, goalIDs []goal.ID, goalDetail GoalDetail, department Department) *Detail {
@@ -65,4 +69,37 @@ func New(gameID game.ID, gameName game.Name, goalIDs []goal.ID, goalDetail GoalD
 		GoalDetail: goalDetail,
 		Department: department,
 	}
+}
+
+func (d *Detail) ValidCreate() error {
+	// IDもしくはGameNameが両方ないときはエラー
+	if !d.Game.ID.Valid() && !d.Game.Name.Valid() {
+		return errors.NewInvalidRequest(
+			errors.Layer_Domain,
+			errors.NewInformation(
+				errors.ID_InvalidParams,
+				"",
+				[]errors.InvalidParams{
+					errors.NewInvalidParams("id", d.Game.ID),
+					errors.NewInvalidParams("name", d.Game.Name),
+				},
+			),
+			"Game Valid error",
+		)
+	}
+
+	if !d.Department.Valid() {
+		return errors.NewInvalidRequest(
+			errors.Layer_Domain,
+			errors.NewInformation(
+				errors.ID_InvalidParams,
+				"",
+				[]errors.InvalidParams{
+					errors.NewInvalidParams("department", d.Department),
+				},
+			),
+			"Department Valid error",
+		)
+	}
+	return nil
 }

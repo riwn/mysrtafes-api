@@ -211,13 +211,18 @@ func (g *gameMaster) NewEntity() (*game.Game, error) {
 	}, nil
 }
 
-type gameMasters []*gameMaster
-
-func NewGameMasters() gameMasters {
-	return []*gameMaster{}
+type GameMasters interface {
+	Find(db *gorm.DB, findOption *game.FindOption) error
+	NewEntities() ([]*game.Game, error)
 }
 
-func (g *gameMasters) Find(db *gorm.DB, findOption *game.FindOption) error {
+type gameMasters []*gameMaster
+
+func NewGameMasters() GameMasters {
+	return gameMasters{}
+}
+
+func (g gameMasters) Find(db *gorm.DB, findOption *game.FindOption) error {
 	// 検索モードで調整
 	switch findOption.SearchMode {
 	case game.SearchMode_Pagination:
@@ -253,4 +258,16 @@ func (g *gameMasters) Find(db *gorm.DB, findOption *game.FindOption) error {
 		)
 	}
 	return nil
+}
+
+func (g gameMasters) NewEntities() ([]*game.Game, error) {
+	entities := make([]*game.Game, 0, len(g))
+	for _, model := range g {
+		game, err := model.NewEntity()
+		if err != nil {
+			return nil, err
+		}
+		entities = append(entities, game)
+	}
+	return entities, nil
 }

@@ -50,6 +50,7 @@ func (s services) apiV1Router() http.Handler {
 func (s services) mysChallengeRouter() http.Handler {
 	r := chi.NewRouter()
 	challengeHandler := v1Challenge.NewChallengeHandler(s.Challenge)
+	r.Get("/challenges/{challengeID}", challengeHandler.HandleChallenge)
 	r.Post("/challenges", challengeHandler.HandleChallenge)
 	return r
 }

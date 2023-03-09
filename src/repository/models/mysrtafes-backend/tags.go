@@ -129,13 +129,18 @@ func (t *tagMaster) NewEntity() *tag.Tag {
 	}
 }
 
-type tagMasters []*tagMaster
-
-func NewTagMasters() tagMasters {
-	return []*tagMaster{}
+type TagMasters interface {
+	Find(db *gorm.DB, findOption *tag.FindOption) error
+	NewEntities() []*tag.Tag
 }
 
-func (t *tagMasters) Find(db *gorm.DB, findOption *tag.FindOption) error {
+type tagMasters []*tagMaster
+
+func NewTagMasters() TagMasters {
+	return tagMasters{}
+}
+
+func (t tagMasters) Find(db *gorm.DB, findOption *tag.FindOption) error {
 	// 検索モードで調整
 	switch findOption.SearchMode {
 	case tag.SearchMode_Pagination:
@@ -162,4 +167,12 @@ func (t *tagMasters) Find(db *gorm.DB, findOption *tag.FindOption) error {
 		)
 	}
 	return nil
+}
+
+func (t tagMasters) NewEntities() []*tag.Tag {
+	entities := make([]*tag.Tag, 0, len(t))
+	for _, model := range t {
+		entities = append(entities, model.NewEntity())
+	}
+	return entities
 }

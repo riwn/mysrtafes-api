@@ -53,8 +53,8 @@ func (platformMaster) TableName() string {
 	return "platform_masters"
 }
 
-func (t *platformMaster) Create(db *gorm.DB) error {
-	result := db.Create(t)
+func (p *platformMaster) Create(db *gorm.DB) error {
+	result := db.Create(p)
 	if result.Error != nil {
 		return errors.NewInternalServerError(
 			errors.Layer_Model,
@@ -69,8 +69,8 @@ func (t *platformMaster) Create(db *gorm.DB) error {
 	return nil
 }
 
-func (t *platformMaster) Read(db *gorm.DB) error {
-	result := db.Where("id = ?", t.ID).Find(&t)
+func (p *platformMaster) Read(db *gorm.DB) error {
+	result := db.Where("id = ?", p.ID).Find(&p)
 	if result.Error != nil {
 		return errors.NewInternalServerError(
 			errors.Layer_Model,
@@ -85,9 +85,9 @@ func (t *platformMaster) Read(db *gorm.DB) error {
 	return nil
 }
 
-func (t *platformMaster) Update(db *gorm.DB) error {
+func (p *platformMaster) Update(db *gorm.DB) error {
 	// TODO: 更新の時だけCreatedAtが入ってこない問題があるっぽい。
-	result := db.Updates(t)
+	result := db.Updates(p)
 	if result.Error != nil {
 		return errors.NewInternalServerError(
 			errors.Layer_Model,
@@ -102,8 +102,8 @@ func (t *platformMaster) Update(db *gorm.DB) error {
 	return nil
 }
 
-func (t *platformMaster) Delete(db *gorm.DB) error {
-	result := db.Delete(t)
+func (p *platformMaster) Delete(db *gorm.DB) error {
+	result := db.Delete(p)
 	if result.Error != nil {
 		return errors.NewInternalServerError(
 			errors.Layer_Model,
@@ -118,23 +118,28 @@ func (t *platformMaster) Delete(db *gorm.DB) error {
 	return nil
 }
 
-func (t *platformMaster) NewEntity() *platform.Platform {
+func (p *platformMaster) NewEntity() *platform.Platform {
 	return &platform.Platform{
-		ID:          t.ID,
-		Name:        t.Name,
-		Description: t.Description,
-		CreatedAt:   t.CreatedAt,
-		UpdatedAt:   t.UpdatedAt,
+		ID:          p.ID,
+		Name:        p.Name,
+		Description: p.Description,
+		CreatedAt:   p.CreatedAt,
+		UpdatedAt:   p.UpdatedAt,
 	}
+}
+
+type PlatformMasters interface {
+	Find(db *gorm.DB, findOption *platform.FindOption) error
+	NewEntities() []*platform.Platform
 }
 
 type platformMasters []*platformMaster
 
-func NewPlatformMasters() platformMasters {
-	return []*platformMaster{}
+func NewPlatformMasters() PlatformMasters {
+	return platformMasters{}
 }
 
-func (t *platformMasters) Find(db *gorm.DB, findOption *platform.FindOption) error {
+func (p platformMasters) Find(db *gorm.DB, findOption *platform.FindOption) error {
 	// 検索モードで調整
 	switch findOption.SearchMode {
 	case platform.SearchMode_Pagination:
@@ -148,7 +153,7 @@ func (t *platformMasters) Find(db *gorm.DB, findOption *platform.FindOption) err
 		db.Order(clause.OrderByColumn{Column: clause.Column{Name: "name"}, Desc: findOption.OrderOption.Desc})
 	}
 
-	result := db.Find(&t)
+	result := db.Find(&p)
 	if result.Error != nil {
 		return errors.NewInternalServerError(
 			errors.Layer_Model,
@@ -161,4 +166,12 @@ func (t *platformMasters) Find(db *gorm.DB, findOption *platform.FindOption) err
 		)
 	}
 	return nil
+}
+
+func (p platformMasters) NewEntities() []*platform.Platform {
+	entities := make([]*platform.Platform, 0, len(p))
+	for _, model := range p {
+		entities = append(entities, model.NewEntity())
+	}
+	return entities
 }
