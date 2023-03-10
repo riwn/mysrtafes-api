@@ -11,6 +11,11 @@ import (
 // DetailID
 type ID uint64
 
+// id > 0
+func (i ID) Valid() bool {
+	return i > 0
+}
+
 // 目標説明
 type GoalDetail string
 

@@ -3,6 +3,7 @@ package repository
 import (
 	"errors"
 	"mysrtafes-backend/pkg/challenge"
+	"mysrtafes-backend/pkg/challenge/detail/goal"
 	"mysrtafes-backend/pkg/game"
 	"mysrtafes-backend/pkg/game/platform"
 	"mysrtafes-backend/pkg/game/tag"
@@ -19,7 +20,7 @@ type Repository interface {
 	challenge.Repository
 	// stream.Repository
 	// detail.Repository
-	// goal.Repository
+	goal.Repository
 	// result.Repository
 	game.Repository
 	// link.Repository
@@ -208,6 +209,26 @@ func (r *repository) GameUpdate(game *game.Game, platformIDs []platform.ID, tagI
 func (r *repository) GameDelete(id game.ID) error {
 	model := mysrtafes_backend.NewGameMasterFromID(id)
 	return model.Delete(r.DB)
+}
+
+func (r *repository) GoalCreate(*goal.Goal) (*goal.Goal, error) {
+	return nil, errors.New("not implemented GoalCreate")
+}
+
+func (r *repository) GoalRead(id goal.ID) (*goal.Goal, error) {
+	return nil, errors.New("not implemented GoalRead")
+}
+
+func (r *repository) GoalFind(*goal.FindOption) ([]*goal.Goal, error) {
+	return nil, errors.New("not implemented GoalFind")
+}
+
+func (r *repository) GoalUpdate(*goal.Goal) (*goal.Goal, error) {
+	return nil, errors.New("not implemented GoalUpdate")
+}
+
+func (r *repository) GoalDelete(id goal.ID) error {
+	return errors.New("not implemented GoalDelete")
 }
 
 func (r *repository) Close() error {

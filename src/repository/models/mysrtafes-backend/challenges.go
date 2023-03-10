@@ -3,6 +3,7 @@ package mysrtafes_backend
 import (
 	"mysrtafes-backend/pkg/challenge"
 	"mysrtafes-backend/pkg/errors"
+	"mysrtafes-backend/pkg/game"
 	"time"
 
 	"gorm.io/gorm"
@@ -59,6 +60,34 @@ func NewNewMysChallenge2ChallengesFromID(id challenge.ID) MysChallenge2Challenge
 
 func (mysChallenge2Challenges) TableName() string {
 	return "mys_challenge2_challenges"
+}
+
+func (m mysChallenge2Challenges) BeforeCreate(db *gorm.DB) error {
+	gameIDs := make([]game.ID, 0, len(m.Details))
+	existIDs := make(map[game.ID]struct{})
+	for _, detail := range m.Details {
+		if _, ok := existIDs[detail.GameMasterID]; !ok {
+			existIDs[detail.GameMasterID] = struct{}{}
+			gameIDs = append(gameIDs, detail.GameMasterID)
+		}
+	}
+
+	var gameModels []*gameMaster
+	db.Where("id IN ?", gameIDs).Find(&gameModels)
+	if len(gameModels) != len(gameIDs) {
+		return errors.NewInvalidValidate(
+			errors.Layer_Model,
+			errors.NewInformation(
+				errors.ID_DBReadError,
+				"game.id model is nothing error",
+				[]errors.InvalidParams{
+					errors.NewInvalidParams("game.id", gameIDs),
+				},
+			),
+			"game.id model is nothing error",
+		)
+	}
+	return nil
 }
 
 func (m *mysChallenge2Challenges) Create(db *gorm.DB) error {

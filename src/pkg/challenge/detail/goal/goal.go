@@ -1,7 +1,14 @@
 package goal
 
+import "time"
+
 // GoalID
 type ID uint64
+
+// 1 ≦ id
+func (i ID) Valid() bool {
+	return i > 0
+}
 
 // 目標名
 type Name string
@@ -22,4 +29,21 @@ type Goal struct {
 	ID          ID
 	Name        Name
 	Description Description
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
+}
+
+func New(name Name, description Description) *Goal {
+	return &Goal{
+		Name:        name,
+		Description: description,
+	}
+}
+
+func NewWithID(id ID, name Name, description Description) *Goal {
+	return &Goal{
+		ID:          id,
+		Name:        name,
+		Description: description,
+	}
 }

@@ -18,6 +18,7 @@ type server struct {
 	repository Repository
 }
 
+// TODO: そもそもこれ必要かどうかは要検討
 func NewServer(repo Repository) Server {
 	return &server{repo}
 }

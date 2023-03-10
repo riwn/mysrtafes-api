@@ -24,12 +24,13 @@ type mysChallenge2ChallengeDetails struct {
 	GoalDetail   detail.GoalDetail
 	GameName     game.Name
 	Department   detail.Department
+	Goals        []*goalGenreMaster `gorm:"many2many:mys_challenge2_goal_genre_detail_links;"`
 	// TODO: Resultの紐付け
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }
 
-func newMysChallenge2ChallengeDetails(challengeID challenge.ID, detail *detail.Detail) *mysChallenge2ChallengeDetails {
+func newMysChallenge2ChallengeDetails(challengeID challenge.ID, detail *detail.Detail, goals []*goalGenreMaster) *mysChallenge2ChallengeDetails {
 	// TODO: GoalGenreの紐付けを追加する
 	return &mysChallenge2ChallengeDetails{
 		ID:           detail.ID,
@@ -38,6 +39,7 @@ func newMysChallenge2ChallengeDetails(challengeID challenge.ID, detail *detail.D
 		GoalDetail:   detail.GoalDetail,
 		GameName:     detail.Game.Name,
 		Department:   detail.Department,
+		Goals:        goals,
 	}
 }
 
@@ -87,7 +89,8 @@ type mysChallenge2ChallengeDetailsList []*mysChallenge2ChallengeDetails
 func NewMysChallenge2ChallengeDetailsList(challenge *challenge.Challenge) MysChallenge2ChallengeDetailsList {
 	models := make(mysChallenge2ChallengeDetailsList, 0, len(challenge.Details))
 	for _, challengeDetail := range challenge.Details {
-		models = append(models, newMysChallenge2ChallengeDetails(challenge.ID, challengeDetail))
+		goalModels := NewGoalGenreMasterFromGoals(challengeDetail.Goals)
+		models = append(models, newMysChallenge2ChallengeDetails(challenge.ID, challengeDetail, goalModels))
 	}
 	return models
 }
@@ -101,12 +104,48 @@ func NewEmptyMysChallenge2ChallengeDetailsList() mysChallenge2ChallengeDetailsLi
 }
 
 func (d mysChallenge2ChallengeDetailsList) BeforeCreate(db *gorm.DB) error {
-	// TODO: GoalGenreのValidate
+	gameIDs := make([]game.ID, 0, len(d))
+	existIDs := make(map[game.ID]struct{})
+	for _, detail := range d {
+		if _, ok := existIDs[detail.GameMasterID]; !ok {
+			existIDs[detail.GameMasterID] = struct{}{}
+			gameIDs = append(gameIDs, detail.GameMasterID)
+		}
+	}
+
+	var gameModels []*gameMaster
+	db.Where("id IN ?", gameIDs).Find(&gameModels)
+	if len(gameModels) != len(gameIDs) {
+		return errors.NewInvalidValidate(
+			errors.Layer_Model,
+			errors.NewInformation(
+				errors.ID_DBReadError,
+				"game.id model is nothing error",
+				[]errors.InvalidParams{
+					errors.NewInvalidParams("game.id", gameIDs),
+				},
+			),
+			"game.id model is nothing error",
+		)
+	}
 	return nil
 }
 
 func (d mysChallenge2ChallengeDetailsList) Create(db *gorm.DB) error {
-	result := db.Create(d)
+	// 中間テーブルの設定
+	err := db.SetupJoinTable(&mysChallenge2ChallengeDetails{}, "Goals", detailGoalLink{})
+	if err != nil {
+		return errors.NewInternalServerError(
+			errors.Layer_Model,
+			errors.NewInformation(
+				errors.ID_DBTableJoinError,
+				err.Error(),
+				nil,
+			),
+			"set many to many table error",
+		)
+	}
+	result := db.Omit("Goals.*").Create(d)
 	if result.Error != nil {
 		// FIXME: ここ、ModelのBeforeCreateのエラーが伝播できてない。
 		return errors.NewInternalServerError(

@@ -86,7 +86,7 @@ func (p *platformMaster) Read(db *gorm.DB) error {
 }
 
 func (p *platformMaster) Update(db *gorm.DB) error {
-	// TODO: 更新の時だけCreatedAtが入ってこない問題があるっぽい。
+	// TODO: 更新の時だけCreatedAtが入ってこない問題がある。
 	result := db.Updates(p)
 	if result.Error != nil {
 		return errors.NewInternalServerError(
